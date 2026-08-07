@@ -149,6 +149,8 @@ pnpm rating:recompute                      # вся история
 
 - [`docs/decisions.md`](docs/decisions.md) — принятые решения и отклонения от ТЗ
   с обоснованиями. Читать до правок в `packages/rating`.
+- [`docs/supabase-setup.md`](docs/supabase-setup.md) — что нужно сделать в
+  Supabase и какие значения принести, чтобы поднять окружение.
 
 ## Стек
 
