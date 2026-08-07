@@ -1,0 +1,602 @@
+// Схема данных PaddelBase. Основа — ТЗ §6, с исправлениями из docs/decisions.md.
+//
+// Таблицы живут в схеме `app`, а не в `public`. Причина в Supabase: схема
+// `public` публикуется наружу через PostgREST, anon-ключ публичен по своей
+// природе, а Prisma создаёт таблицы без RLS. В отдельной схеме PostgREST их
+// просто не видит.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Пулер Supabase (порт 6543) с ?pgbouncer=true&connection_limit=1
+  url      = env("DATABASE_URL")
+  // Прямое соединение (порт 5432): нужно миграциям, пулер их не выдерживает
+  directUrl = env("DIRECT_URL")
+  schemas  = ["app"]
+}
+
+// ---------------------------------------------------------------------------
+// Пользователи
+// ---------------------------------------------------------------------------
+
+enum Role {
+  PLAYER
+  ORGANIZER
+  ADMIN
+
+  @@schema("app")
+}
+
+model User {
+  id         String  @id @default(cuid())
+  telegramId String? @unique
+  phone      String? @unique
+  firstName  String
+  lastName   String
+  avatarUrl  String?
+  city       String?
+  role       Role    @default(PLAYER)
+
+  // --- Рейтинг ---
+
+  /// Текущий уровень, 0.000–7.000.
+  level Decimal @db.Decimal(4, 3)
+
+  /// Стартовый уровень по анкете. Именно к нему откатывается пересчёт истории —
+  /// selfAssessedLevel для этого не годится, он не включает надбавки за опыт.
+  startLevel Decimal @db.Decimal(4, 3)
+
+  /// Голая самооценка из анкеты. Хранится отдельно для анализа сэндбэггинга.
+  selfAssessedLevel Decimal @db.Decimal(4, 3)
+
+  /// Ответы анкеты целиком: позволяют пересчитать и саму формулу стартового уровня.
+  onboardingAnswers Json?
+
+  /// Надёжность на момент последнего рейтингового события.
+  /// Текущее значение — чистая функция от (reliabilityBase, lastRatedMatchAt, now).
+  reliabilityBase Decimal @db.Decimal(4, 3) @default(0.050)
+
+  /// Материализованная текущая надёжность: только для сортировок и фильтров.
+  /// Источник истины — reliabilityBase; расхождение не влияет на расчёты.
+  reliability Decimal @db.Decimal(4, 3) @default(0.050)
+
+  ratedMatchesCount Int       @default(0)
+  lastRatedMatchAt  DateTime?
+
+  /// Балл активности. В MVP заглушка, всегда 0 (ТЗ §5.1).
+  activityScore Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdMatches         Match[]                 @relation("MatchCreator")
+  matchPlayers           MatchPlayer[]
+  matchApplications      MatchApplication[]
+  enteredResults         MatchResult[]           @relation("ResultEnteredBy")
+  confirmedResults       MatchResult[]           @relation("ResultConfirmedBy")
+  organizedTournaments   Tournament[]
+  tournamentParticipants TournamentParticipant[]
+  tournamentMatchPlayers TournamentMatchPlayer[]
+  captainedTeams         TournamentTeam[]        @relation("TeamCaptain")
+  ratingEvents           RatingEvent[]
+  posts                  Post[]
+  comments               PostComment[]
+  likes                  PostLike[]
+  reports                PostReport[]
+  notifications          Notification[]
+
+  @@index([level])
+  @@map("users")
+  @@schema("app")
+}
+
+// ---------------------------------------------------------------------------
+// Корты
+// ---------------------------------------------------------------------------
+
+model Court {
+  id        String  @id @default(cuid())
+  name      String
+  city      String
+  address   String
+  lat       Float?
+  lng       Float?
+  courtsQty Int     @default(1)
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  matches     Match[]
+  tournaments Tournament[]
+
+  @@index([city, isActive])
+  @@map("courts")
+  @@schema("app")
+}
+
+// ---------------------------------------------------------------------------
+// Матчи
+// ---------------------------------------------------------------------------
+
+enum Visibility {
+  PUBLIC
+  LINK
+
+  @@schema("app")
+}
+
+/// Жизненный цикл заявки (ТЗ §4.1). В §6 enum был короче самого цикла:
+/// DRAFT, CONFIRMED и EXPIRED в нём отсутствовали.
+enum MatchStatus {
+  DRAFT
+  OPEN
+  FILLED
+  CONFIRMED
+  PLAYED
+  COMPLETED
+  DISPUTED
+  CANCELLED
+  EXPIRED
+
+  @@schema("app")
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+
+  @@schema("app")
+}
+
+model Match {
+  id        String @id @default(cuid())
+  creatorId String
+  courtId   String
+
+  startsAt    DateTime
+  /// 60 | 90 | 120 | 180
+  durationMin Int
+
+  isRated     Boolean
+  visibility  Visibility  @default(PUBLIC)
+  slotsTotal  Int         @default(4)
+  slotsMissing Int
+  courtBooked Boolean     @default(false)
+  levelMin    Decimal?    @db.Decimal(4, 3)
+  levelMax    Decimal?    @db.Decimal(4, 3)
+  comment     String?
+  status      MatchStatus @default(OPEN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator      User               @relation("MatchCreator", fields: [creatorId], references: [id])
+  court        Court              @relation(fields: [courtId], references: [id])
+  players      MatchPlayer[]
+  applications MatchApplication[]
+  result       MatchResult?
+  ratingEvents RatingEvent[]
+
+  @@index([status, startsAt])
+  @@index([courtId, startsAt])
+  @@index([creatorId])
+  @@map("matches")
+  @@schema("app")
+}
+
+model MatchPlayer {
+  id      String @id @default(cuid())
+  matchId String
+  userId  String
+
+  /// 1 | 2. Заполняется при вводе счёта: без состава пар рейтинг не посчитать.
+  team Int?
+
+  joinedAt DateTime @default(now())
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([matchId, userId])
+  @@index([userId])
+  @@map("match_players")
+  @@schema("app")
+}
+
+model MatchApplication {
+  id      String            @id @default(cuid())
+  matchId String
+  userId  String
+  status  ApplicationStatus @default(PENDING)
+  message String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([matchId, userId])
+  @@index([userId, status])
+  @@map("match_applications")
+  @@schema("app")
+}
+
+model MatchResult {
+  id      String @id @default(cuid())
+  matchId String @unique
+
+  /// [{a:6,b:4},{a:3,b:6},{a:7,b:5}]
+  sets       Json
+  gamesA     Int
+  gamesB     Int
+  winnerTeam Int
+
+  enteredById String
+  /// Подтверждает игрок из пары, которая счёт НЕ вводила (ТЗ §3.5 п. 3 уточнён:
+  /// иначе проигравший, сам введя счёт, подтверждал бы его сам себе).
+  confirmedById String?
+  confirmedAt   DateTime?
+  disputedAt    DateTime?
+
+  /// Стало ли это событие рейтинговым. Матч может быть isRated, но не пройти
+  /// проверки §3.5: лимит матчей в сутки, минимальный объём игры, спор.
+  isRatingApplied Boolean @default(false)
+  /// Почему рейтинг не применён, если не применён.
+  skipReason      String?
+
+  createdAt DateTime @default(now())
+
+  match       Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  enteredBy   User  @relation("ResultEnteredBy", fields: [enteredById], references: [id])
+  confirmedBy User? @relation("ResultConfirmedBy", fields: [confirmedById], references: [id])
+
+  @@index([confirmedAt])
+  @@map("match_results")
+  @@schema("app")
+}
+
+// ---------------------------------------------------------------------------
+// Турниры
+// ---------------------------------------------------------------------------
+
+enum TournamentFormat {
+  AMERICANO
+  MEXICANO
+  TEAM_AMERICANO
+  TEAM_MEXICANO
+
+  @@schema("app")
+}
+
+enum TournamentStatus {
+  DRAFT
+  REGISTRATION
+  READY
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@schema("app")
+}
+
+enum RoundStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+
+  @@schema("app")
+}
+
+model Tournament {
+  id          String @id @default(cuid())
+  organizerId String
+  courtId     String
+
+  format     TournamentFormat
+  isRated    Boolean
+  visibility Visibility       @default(PUBLIC)
+
+  startsAt    DateTime
+  durationMin Int
+  courtsCount Int
+
+  maxParticipants Int
+  /// 16 | 21 | 24 | 32
+  pointsPerRound  Int
+  roundsCount     Int
+
+  /// Доля номинала раунда, начисляемая отдыхающему (ТЗ §4.3).
+  restCompensation Decimal @db.Decimal(3, 2) @default(0.50)
+
+  feeAmount   Int?
+  feeCurrency String? @default("GEL")
+  description String?
+
+  status TournamentStatus @default(DRAFT)
+
+  /// Делает генерацию сетки воспроизводимой: без него расстановка «поплывёт»
+  /// при перезагрузке или пересчёте.
+  seed String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizer    User                    @relation(fields: [organizerId], references: [id])
+  court        Court                   @relation(fields: [courtId], references: [id])
+  participants TournamentParticipant[]
+  teams        TournamentTeam[]
+  rounds       TournamentRound[]
+  ratingEvents RatingEvent[]
+
+  @@index([status, startsAt])
+  @@index([organizerId])
+  @@map("tournaments")
+  @@schema("app")
+}
+
+/// Команда в командных форматах (ТЗ §4.4): капитан приглашает партнёра.
+model TournamentTeam {
+  id           String  @id @default(cuid())
+  tournamentId String
+  name         String?
+  captainId    String
+
+  points        Int  @default(0)
+  pointsAgainst Int  @default(0)
+  restCount     Int  @default(0)
+  finalPlace    Int?
+
+  createdAt DateTime @default(now())
+
+  tournament   Tournament              @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  captain      User                    @relation("TeamCaptain", fields: [captainId], references: [id])
+  participants TournamentParticipant[]
+
+  @@index([tournamentId])
+  @@map("tournament_teams")
+  @@schema("app")
+}
+
+model TournamentParticipant {
+  id           String  @id @default(cuid())
+  tournamentId String
+  userId       String
+  teamId       String?
+
+  /// Снимок уровня на старте турнира. Весь турнир считается от него (ТЗ §3.6).
+  levelAtStart       Decimal @db.Decimal(4, 3)
+  reliabilityAtStart Decimal @db.Decimal(4, 3)
+
+  points        Int  @default(0)
+  pointsAgainst Int  @default(0)
+  restCount     Int  @default(0)
+  finalPlace    Int?
+
+  joinedAt DateTime @default(now())
+
+  tournament Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id])
+  team       TournamentTeam? @relation(fields: [teamId], references: [id])
+
+  @@unique([tournamentId, userId])
+  @@index([userId])
+  @@map("tournament_participants")
+  @@schema("app")
+}
+
+model TournamentRound {
+  id           String      @id @default(cuid())
+  tournamentId String
+  roundNumber  Int
+  status       RoundStatus @default(PENDING)
+
+  createdAt DateTime  @default(now())
+  closedAt  DateTime?
+
+  tournament Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matches    TournamentMatch[]
+
+  @@unique([tournamentId, roundNumber])
+  @@map("tournament_rounds")
+  @@schema("app")
+}
+
+model TournamentMatch {
+  id          String @id @default(cuid())
+  roundId     String
+  courtNumber Int
+
+  scoreA Int?
+  scoreB Int?
+
+  /// Для командных форматов: какие команды играли.
+  teamAId String?
+  teamBId String?
+
+  status RoundStatus @default(PENDING)
+
+  round TournamentRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  /// Состав сторон. В ТЗ §6 это были массивы String[]; связь нужна, чтобы
+  /// история матчей игрока строилась запросом, а не разбором массивов.
+  players TournamentMatchPlayer[]
+
+  @@unique([roundId, courtNumber])
+  @@map("tournament_matches")
+  @@schema("app")
+}
+
+model TournamentMatchPlayer {
+  id      String @id @default(cuid())
+  matchId String
+  userId  String
+  /// 1 | 2
+  team    Int
+
+  match TournamentMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User            @relation(fields: [userId], references: [id])
+
+  @@unique([matchId, userId])
+  @@index([userId])
+  @@map("tournament_match_players")
+  @@schema("app")
+}
+
+// ---------------------------------------------------------------------------
+// Рейтинг
+// ---------------------------------------------------------------------------
+
+/// Каждое изменение уровня. Основа возможности пересчитать историю (ТЗ §3.10):
+/// в snapshot лежит полный вход движка, поэтому событие объяснимо и
+/// воспроизводимо без обращения к остальной базе.
+model RatingEvent {
+  id           String  @id @default(cuid())
+  userId       String
+  matchId      String?
+  tournamentId String?
+
+  occurredAt DateTime
+
+  levelBefore Decimal @db.Decimal(4, 3)
+  levelAfter  Decimal @db.Decimal(4, 3)
+  delta       Decimal @db.Decimal(5, 4)
+
+  reliabilityBefore Decimal @db.Decimal(4, 3)
+  reliabilityAfter  Decimal @db.Decimal(4, 3)
+
+  /// Полный вход движка: уровни всех участников, счёт, все множители.
+  snapshot      Json
+  configVersion String
+
+  createdAt DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id])
+  match      Match?      @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  tournament Tournament? @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, occurredAt])
+  @@index([occurredAt])
+  @@map("rating_events")
+  @@schema("app")
+}
+
+// ---------------------------------------------------------------------------
+// Комьюнити
+// ---------------------------------------------------------------------------
+
+model Post {
+  id       String @id @default(cuid())
+  authorId String
+  text     String
+
+  /// [{type:'image'|'video', url, width, height}]
+  media Json @default("[]")
+
+  isPinned Boolean @default(false)
+  isHidden Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   User          @relation(fields: [authorId], references: [id])
+  comments PostComment[]
+  likes    PostLike[]
+  reports  PostReport[]
+
+  @@index([createdAt])
+  @@index([isPinned, createdAt])
+  @@map("posts")
+  @@schema("app")
+}
+
+model PostComment {
+  id       String  @id @default(cuid())
+  postId   String
+  authorId String
+  text     String
+  isHidden Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+
+  @@index([postId, createdAt])
+  @@map("post_comments")
+  @@schema("app")
+}
+
+model PostLike {
+  id     String @id @default(cuid())
+  postId String
+  userId String
+
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+  @@map("post_likes")
+  @@schema("app")
+}
+
+/// Жалоба на пост или комментарий. Модерация в MVP ручная (ТЗ §5.5).
+model PostReport {
+  id            String  @id @default(cuid())
+  postId        String
+  reporterId    String
+  commentId     String?
+  reason        String?
+  isResolved    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  post     Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter User @relation(fields: [reporterId], references: [id])
+
+  @@index([isResolved, createdAt])
+  @@map("post_reports")
+  @@schema("app")
+}
+
+// ---------------------------------------------------------------------------
+// Уведомления
+// ---------------------------------------------------------------------------
+
+enum NotificationType {
+  MATCH_APPLICATION
+  APPLICATION_ACCEPTED
+  APPLICATION_REJECTED
+  MATCH_FILLED
+  MATCH_REMINDER
+  RESULT_ENTER
+  RESULT_CONFIRM
+  RATING_CHANGED
+  TOURNAMENT_ROUND
+  POST_COMMENT
+
+  @@schema("app")
+}
+
+model Notification {
+  id      String           @id @default(cuid())
+  userId  String
+  type    NotificationType
+  payload Json
+  isRead  Boolean          @default(false)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+  @@schema("app")
+}

@@ -9,7 +9,11 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @paddelbase/db generate",
+    "db:migrate": "pnpm --filter @paddelbase/db migrate:dev",
+    "db:deploy": "pnpm --filter @paddelbase/db migrate:deploy",
+    "db:seed": "pnpm --filter @paddelbase/db seed"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

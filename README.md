@@ -11,7 +11,7 @@
 apps/web              — Next.js приложение              (ещё не создано)
 packages/rating       — движок рейтинга, чистая логика   ✔
 packages/tournament   — генераторы сеток, чистая логика  ✔
-packages/db           — Prisma-схема и клиент            (следующий шаг)
+packages/db           — Prisma-схема и клиент            ✔
 ```
 
 `packages/rating` и `packages/tournament` не импортируют ничего из `web` и `db`:
@@ -26,6 +26,24 @@ pnpm install
 pnpm test         # все пакеты
 pnpm typecheck
 ```
+
+## База данных
+
+```bash
+cp .env.example .env      # заполнить DATABASE_URL и DIRECT_URL из Supabase
+pnpm db:generate          # Prisma Client
+pnpm db:deploy            # применить миграции
+pnpm db:seed              # заглушки кортов и тестовые игроки
+```
+
+`DATABASE_URL` — пулер Supabase на порту 6543 обязательно с `?pgbouncer=true`;
+`DIRECT_URL` — прямое соединение на 5432, его использует только миграция.
+
+Таблицы живут в схеме `app`, а не в `public`: `public` публикуется наружу через
+PostgREST по публичному anon-ключу, а Prisma создаёт таблицы без RLS.
+
+Справочник кортов в сиде — **заглушки**. Реальные данные клубов нужно собрать и
+загрузить отдельно.
 
 ## Документы
 
