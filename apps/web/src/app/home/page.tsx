@@ -5,11 +5,12 @@ import { effectiveReliability, formatLevel, levelCategory } from '@paddelbase/ra
 import Link from 'next/link';
 
 import { AppShell } from '@/components/AppShell';
-import { Badge } from '@/components/Badges';
+import { CreateButton } from '@/components/CreateButton';
 import { MatchCard } from '@/components/MatchCard';
+import { TournamentCard } from '@/components/TournamentCard';
 import { Card } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
-import { TOURNAMENT_FORMAT_NAMES, formatDateTime, ratedMatchesLabel } from '@/lib/format';
+import { ratedMatchesLabel } from '@/lib/format';
 
 export default async function HomePage({
   searchParams,
@@ -96,37 +97,12 @@ export default async function HomePage({
 
         <Section title="Турниры" empty="Открытых турниров нет" items={tournaments.length}>
           {tournaments.map((tournament) => (
-            <div key={tournament.id} className="rounded-card border border-border bg-surface p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-medium">{TOURNAMENT_FORMAT_NAMES[tournament.format]}</p>
-                  <p className="mt-0.5 text-sm text-muted">
-                    {formatDateTime(tournament.startsAt)} · {tournament.courtName}
-                  </p>
-                </div>
-                {tournament.isRated ? <Badge tone="accent">рейтинговый</Badge> : null}
-              </div>
-              <p className="mt-3 text-sm text-muted">
-                Занято {tournament.participants} из {tournament.maxParticipants}
-                {tournament.feeAmount ? ` · взнос ${tournament.feeAmount} ₾` : ''}
-              </p>
-            </div>
+            <TournamentCard key={tournament.id} tournament={tournament} />
           ))}
         </Section>
       </main>
 
-      {/* Плавающая кнопка создания (ТЗ §5.1). Пока ведёт сразу в создание
-          матча: турниры добавятся следующим шагом, и шторка выбора из одного
-          пункта была бы лишним касанием. */}
-      <Link
-        href="/matches/new"
-        className="fixed bottom-20 left-1/2 z-10 flex min-h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-accent px-5 font-medium text-accent-ink shadow-lg shadow-accent/20"
-      >
-        <span aria-hidden className="text-lg leading-none">
-          +
-        </span>
-        Создать матч
-      </Link>
+      <CreateButton />
     </AppShell>
   );
 }

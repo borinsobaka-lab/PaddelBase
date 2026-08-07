@@ -5,6 +5,7 @@ import { prisma } from '@paddelbase/db';
 import { redirect } from 'next/navigation';
 
 import { loadCurrentUser } from '@/lib/currentUser';
+import { tbilisiLocalToUtc } from '@/lib/time';
 
 export interface CreateMatchState {
   error?: string;
@@ -52,19 +53,4 @@ function parseLevelRange(formData: FormData): { levelMin?: number; levelMax?: nu
   const max = formData.get('levelMax');
   if (!min || !max) return {};
   return { levelMin: Number(min), levelMax: Number(max) };
-}
-
-/**
- * Форма отдаёт локальные дату и время. Хранение — в UTC, отображение — в
- * Asia/Tbilisi (ТЗ §2), поэтому пересчёт делается здесь фиксированным сдвигом:
- * в Грузии UTC+4 круглый год, без перехода на летнее время.
- */
-const TBILISI_OFFSET_HOURS = 4;
-
-function tbilisiLocalToUtc(date: string, time: string): Date {
-  const parsed = new Date(`${date}T${time}:00.000Z`);
-  if (Number.isNaN(parsed.getTime())) {
-    throw new MatchLifecycleError('Не удалось разобрать дату и время');
-  }
-  return new Date(parsed.getTime() - TBILISI_OFFSET_HOURS * 60 * 60 * 1000);
 }

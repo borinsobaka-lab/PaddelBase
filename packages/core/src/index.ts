@@ -9,3 +9,4 @@ export * from './jobs.js';
 export * from './metrics.js';
 export * from './onboarding.js';
 export * from './matchQueries.js';
+export * from './tournamentQueries.js';
