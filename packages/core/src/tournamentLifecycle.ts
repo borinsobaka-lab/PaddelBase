@@ -449,7 +449,11 @@ export async function finishTournament(
 
     if (!tournament.isRated) return { ratingApplied: false };
 
-    await applyTournamentRating(tx, tournament.id, input.now, config);
+    // Момент рейтингового события выводится из расписания турнира, а не из
+    // времени нажатия кнопки: иначе порядок событий зависел бы от того, когда
+    // организатор вспомнил завершить турнир, и пересчёт истории дал бы другой
+    // результат.
+    await applyTournamentRating(tx, tournament.id, tournamentOccurredAt(tournament), config);
     return { ratingApplied: true };
   });
 }
@@ -829,6 +833,14 @@ async function applyTournamentRating(
       }),
     })),
   });
+}
+
+/** Канонический момент турнирного рейтингового события. */
+export function tournamentOccurredAt(tournament: {
+  startsAt: Date;
+  durationMin: number;
+}): Date {
+  return new Date(tournament.startsAt.getTime() + tournament.durationMin * 60_000);
 }
 
 function formatKey(format: string): 'americano' | 'mexicano' {

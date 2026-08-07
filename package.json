@@ -13,7 +13,8 @@
     "db:generate": "pnpm --filter @paddelbase/db generate",
     "db:migrate": "pnpm --filter @paddelbase/db migrate:dev",
     "db:deploy": "pnpm --filter @paddelbase/db migrate:deploy",
-    "db:seed": "pnpm --filter @paddelbase/db seed"
+    "db:seed": "pnpm --filter @paddelbase/db seed",
+    "rating:recompute": "pnpm --filter @paddelbase/core recompute"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

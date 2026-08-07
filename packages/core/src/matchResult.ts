@@ -413,7 +413,11 @@ async function countRatedMatchesToday(
     where: {
       userId: { in: [...playerIds] },
       occurredAt: { gte: start, lt: end },
-      matchId: { not: excludeMatchId },
+      // Лимит §3.5 п. 4 говорит именно о матчах: турнир — одно событие за
+      // вечер и в дневной счёт не идёт. Условие явное, потому что
+      // `matchId: { not: ... }` и так отбросило бы NULL по семантике SQL,
+      // и полагаться на это молча не стоит.
+      AND: [{ matchId: { not: null } }, { matchId: { not: excludeMatchId } }],
     },
     _count: { _all: true },
   });

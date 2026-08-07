@@ -11,7 +11,8 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "recompute": "tsx src/cli/recompute.ts"
   },
   "dependencies": {
     "@paddelbase/db": "workspace:*",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@types/node": "^26.2.0",
     "typescript": "^5.7.3",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.5",
+    "tsx": "^4.19.2"
   }
 }

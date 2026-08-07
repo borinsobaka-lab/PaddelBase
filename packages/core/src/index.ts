@@ -3,3 +3,4 @@ export * from './guards.js';
 export * from './matchResult.js';
 export * from './matchLifecycle.js';
 export * from './tournamentLifecycle.js';
+export * from './recompute.js';
