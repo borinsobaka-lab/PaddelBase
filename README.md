@@ -10,7 +10,7 @@
 ```
 apps/web              — Next.js приложение              (ещё не создано)
 packages/rating       — движок рейтинга, чистая логика   ✔
-packages/tournament   — генераторы сеток, чистая логика  (следующий шаг)
+packages/tournament   — генераторы сеток, чистая логика  ✔
 packages/db           — Prisma-схема и клиент            (следующий шаг)
 ```
 
