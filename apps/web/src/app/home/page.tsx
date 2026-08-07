@@ -1,17 +1,27 @@
 import { countUnread, listMyMatches, listOpenMatches, listOpenTournaments } from '@paddelbase/core';
-import { prisma } from '@paddelbase/db';
-import { toNumber } from '@paddelbase/db';
-import { effectiveReliability, formatLevel, levelCategory } from '@paddelbase/rating';
+import { prisma, toNumber } from '@paddelbase/db';
+import { effectiveReliability, formatLevel } from '@paddelbase/rating';
 import Link from 'next/link';
 
 import { AppShell } from '@/components/AppShell';
 import { CreateButton } from '@/components/CreateButton';
+import { LevelStrip } from '@/components/LevelStrip';
 import { MatchCard } from '@/components/MatchCard';
 import { TournamentCard } from '@/components/TournamentCard';
-import { Card } from '@/components/ui';
+import { Button, Card, EmptyState, MoreLink, SectionHeader } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
-import { ratedMatchesLabel } from '@/lib/format';
 
+/**
+ * Главная.
+ *
+ * Задача экрана по ТЗ §9 — «за один взгляд понять, куда я записан и куда ещё
+ * могу записаться». Отсюда иерархия: сначала то, что ждёт действия прямо
+ * сейчас, потом свои матчи, и только потом ленты для просмотра.
+ *
+ * Раньше здесь было три равновеликие секции с одинаковыми заголовками и ни
+ * одного фокуса: матч, у которого не введён счёт третьи сутки, выглядел ровно
+ * так же, как турнир, до которого две недели.
+ */
 export default async function HomePage({
   searchParams,
 }: {
@@ -38,119 +48,188 @@ export default async function HomePage({
     now,
   );
 
+  const needsMe = myMatches.filter((match) => match.needsAction !== null);
+  const upcoming = myMatches.filter((match) => match.needsAction === null);
+
   return (
-    <AppShell>
-      <main className="flex flex-col gap-6 pt-6">
-        <div className="flex items-center justify-between gap-3">
-          <Link href="/profile" className="flex flex-1 items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="flex size-11 items-center justify-center rounded-full bg-surface-raised font-medium">
-              {user.firstName[0]?.toUpperCase()}
-            </span>
-            <div>
-              <p className="font-medium">{user.firstName}</p>
-              <p className="text-sm text-muted">
-                {user.ratedMatchesCount === 0
-                  ? 'Уровень не подтверждён'
-                  : ratedMatchesLabel(user.ratedMatchesCount)}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="tabular text-2xl font-semibold leading-none">{formatLevel(level)}</p>
-              <p className="text-xs text-muted">{levelCategory(level)}</p>
-            </div>
-            </div>
-          </Link>
-
-          {/* Колокольчик со счётчиком непрочитанных (ТЗ §5.1). */}
-          <Link
-            href="/notifications"
-            aria-label={unread > 0 ? `Уведомления, непрочитанных: ${unread}` : 'Уведомления'}
-            className="relative flex size-11 items-center justify-center rounded-full border border-border bg-surface"
-          >
-            <BellIcon />
-            {unread > 0 ? (
-              <span className="tabular absolute -right-0.5 -top-0.5 flex min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-medium text-accent-ink">
-                {unread > 99 ? '99+' : unread}
-              </span>
-            ) : null}
-          </Link>
-        </div>
+    <AppShell fab={<CreateButton />}>
+      <main className="flex flex-col gap-7 pt-5">
+        <Greeting firstName={user.firstName} unread={unread} />
 
         {welcome ? (
-          <Card className="border-accent/40 bg-accent-soft">
+          <Card tone="accent">
             <p className="text-sm">
-              Готово, ваш уровень — {formatLevel(level)}. Это стартовая оценка по анкете, она
-              намеренно приблизительная: первые матчи будут двигать её заметно.
+              Готово, ваш уровень — <span className="tabular font-semibold">{formatLevel(level)}</span>.
+              Это стартовая оценка по анкете: первые матчи будут двигать её заметно.
             </p>
           </Card>
         ) : null}
 
-        {reliability < 0.6 ? (
-          <Card className="border-warn/30 bg-warn-soft">
-            <p className="text-sm">
-              Идёт калибровка: надёжность {Math.round(reliability * 100)} %. Пока она ниже 60 %,
-              уровень будет заметно двигаться после каждого матча.
-            </p>
-          </Card>
+        <LevelStrip
+          level={level}
+          reliability={reliability}
+          ratedMatches={user.ratedMatchesCount}
+        />
+
+        {/* Фокус экрана. Секции нет, пока нечему в ней быть — пустой блок
+            «ничего не требуется» только разбавлял бы важное. */}
+        {needsMe.length > 0 ? (
+          <section className="flex flex-col gap-3">
+            <SectionHeader>Требует вас</SectionHeader>
+            {needsMe.map((match) => (
+              <MatchCard key={match.id} match={match} viewerId={user.id} variant="focus" />
+            ))}
+          </section>
         ) : null}
 
-        <Section title="Мои матчи" empty="Вы пока никуда не записаны" items={myMatches.length}>
-          {myMatches.map((match) => (
-            <MatchCard key={match.id} match={match} showStatus />
-          ))}
-        </Section>
+        {/* Секция пропускается, если все матчи уже показаны выше: иначе экран
+            сам себе противоречит — «вы никуда не записаны» под карточкой
+            собственного матча. */}
+        {upcoming.length > 0 || needsMe.length === 0 ? (
+          <section className="flex flex-col gap-3">
+            <SectionHeader>Мои матчи</SectionHeader>
 
-        <Section
-          title="Заявки на матчи"
-          empty="Открытых заявок нет — создайте свою"
-          items={openMatches.length}
+            {upcoming.length === 0 ? (
+              <EmptyState
+                title="Вы никуда не записаны"
+                hint="Создайте заявку или откликнитесь на чужую — свободные места видны ниже."
+                action={
+                  <Link href="/matches/new">
+                    <Button className="!w-auto px-5">Создать матч</Button>
+                  </Link>
+                }
+              />
+            ) : (
+              upcoming.map((match) => (
+                <MatchCard key={match.id} match={match} viewerId={user.id} />
+              ))
+            )}
+          </section>
+        ) : null}
+
+        <Rail
+          title="Свободные места"
+          href="/games"
+          empty="Сейчас никто не ищет партнёров"
+          emptyHint="Создайте заявку — её увидят все игроки."
+          count={openMatches.length}
         >
           {openMatches.map((match) => (
-            <MatchCard key={match.id} match={match} />
+            <div key={match.id} className="w-[290px]">
+              <MatchCard match={match} viewerId={user.id} />
+            </div>
           ))}
-        </Section>
+        </Rail>
 
-        <Section title="Турниры" empty="Открытых турниров нет" items={tournaments.length}>
+        <Rail
+          title="Турниры"
+          href="/games"
+          empty="Открытых турниров нет"
+          emptyHint="Американо на восьмерых занимает вечер — попробуйте собрать."
+          count={tournaments.length}
+        >
           {tournaments.map((tournament) => (
-            <TournamentCard key={tournament.id} tournament={tournament} />
+            <div key={tournament.id} className="w-[290px]">
+              <TournamentCard tournament={tournament} />
+            </div>
           ))}
-        </Section>
+        </Rail>
       </main>
-
-      <CreateButton />
     </AppShell>
+  );
+}
+
+/**
+ * Шапка. Имя и уведомления — два разных действия, поэтому это две отдельные
+ * цели нажатия: раньше вся строка целиком вела в профиль, и колокольчику
+ * приходилось выламываться из неё.
+ */
+function Greeting({ firstName, unread }: { firstName: string; unread: number }) {
+  return (
+    <header className="flex items-center justify-between gap-3">
+      <Link href="/profile" className="pressable flex min-h-11 items-center gap-3">
+        <span className="flex size-10 items-center justify-center rounded-full bg-sunken text-[15px] font-semibold text-text-secondary">
+          {firstName[0]?.toUpperCase()}
+        </span>
+        <span>
+          <span className="block text-[17px] font-semibold leading-tight">{firstName}</span>
+          <span className="block text-[13px] text-muted">Профиль и история</span>
+        </span>
+      </Link>
+
+      <Link
+        href="/notifications"
+        aria-label={unread > 0 ? `Уведомления, непрочитанных: ${unread}` : 'Уведомления'}
+        className="pressable relative flex size-11 items-center justify-center rounded-full bg-surface shadow-raise"
+      >
+        <BellIcon />
+        {unread > 0 ? (
+          <span className="tabular absolute -right-0.5 -top-0.5 flex min-w-[20px] items-center justify-center rounded-full bg-ball px-1 py-0.5 text-[11px] font-semibold text-ball-ink ring-2 ring-canvas">
+            {unread > 99 ? '99+' : unread}
+          </span>
+        ) : null}
+      </Link>
+    </header>
+  );
+}
+
+/**
+ * Горизонтальная лента (ТЗ §5.1). Ленты для просмотра идут вбок, свои матчи —
+ * вниз: чужие заявки листают, свои читают целиком.
+ */
+function Rail({
+  title,
+  href,
+  empty,
+  emptyHint,
+  count,
+  children,
+}: {
+  title: string;
+  href: string;
+  empty: string;
+  emptyHint: string;
+  count: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="flex flex-col gap-3">
+      <SectionHeader
+        action={
+          count > 0 ? (
+            <Link href={href} className="pressable shrink-0">
+              <MoreLink>Все</MoreLink>
+            </Link>
+          ) : null
+        }
+      >
+        {title}
+      </SectionHeader>
+
+      {count === 0 ? (
+        <EmptyState title={empty} hint={emptyHint} variant="quiet" />
+      ) : (
+        <div className="rail">{children}</div>
+      )}
+    </section>
   );
 }
 
 function BellIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7" />
       <path d="M10.5 20a2 2 0 0 0 3 0" />
     </svg>
-  );
-}
-
-function Section({
-  title,
-  empty,
-  items,
-  children,
-}: {
-  title: string;
-  empty: string;
-  items: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      {/* Пустое состояние зовёт к действию, а не извиняется (ТЗ §9). */}
-      {items === 0 ? <p className="text-sm text-muted">{empty}</p> : children}
-    </section>
   );
 }

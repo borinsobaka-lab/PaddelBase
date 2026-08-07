@@ -14,7 +14,7 @@ export function CreateButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-20 left-1/2 z-10 flex min-h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-accent px-5 font-medium text-accent-ink shadow-lg"
+        className="pressable fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-1/2 z-20 flex min-h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-accent px-5 text-[15px] font-semibold text-accent-ink shadow-float"
       >
         <span aria-hidden className="text-lg leading-none">
           +
@@ -23,7 +23,7 @@ export function CreateButton() {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-20 flex items-end justify-center bg-text/30">
+        <div className="fixed inset-0 z-30 flex items-end justify-center bg-text/35 backdrop-blur-[2px]">
           {/* Клик по затемнению закрывает шторку — это ожидаемое поведение,
               и без него единственный выход остаётся кнопкой «Отмена». */}
           <button
@@ -33,18 +33,18 @@ export function CreateButton() {
             onClick={() => setOpen(false)}
           />
 
-          <div className="relative mx-auto w-full max-w-[430px] rounded-t-card border border-border bg-surface p-4 pb-8">
+          <div className="relative mx-auto w-full max-w-[430px] rounded-t-sheet bg-surface p-4 pb-[calc(24px+env(safe-area-inset-bottom))] shadow-float">
             <p className="pb-3 text-center text-sm text-muted">Что создаём?</p>
             <div className="flex flex-col gap-2">
               <Link
                 href="/matches/new"
-                className="flex min-h-12 items-center justify-center rounded-control bg-accent font-medium text-accent-ink"
+                className="pressable flex min-h-12 items-center justify-center rounded-control bg-accent text-[15px] font-semibold text-accent-ink"
               >
                 Матч 2 × 2
               </Link>
               <Link
                 href="/tournaments/new"
-                className="flex min-h-12 items-center justify-center rounded-control border border-border-strong bg-surface font-medium"
+                className="pressable flex min-h-12 items-center justify-center rounded-control bg-surface text-[15px] font-medium shadow-raise"
               >
                 Турнир
               </Link>

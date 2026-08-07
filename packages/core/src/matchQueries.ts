@@ -38,6 +38,15 @@ export interface MatchCard {
   /** Текущий игрок уже откликнулся и ждёт ответа. */
   hasPendingApplication: boolean;
   pendingApplications: number;
+  /**
+   * Что приложение ждёт от смотрящего прямо сейчас.
+   *
+   * Считается здесь, а не в вёрстке: экран должен уметь поставить такой матч
+   * первым и выделить его, а для этого ему нужен готовый ответ, а не набор
+   * флагов, из которых он будет выводить его сам — и по-своему на каждом
+   * экране.
+   */
+  needsAction: 'ENTER_SCORE' | 'CONFIRM_SCORE' | 'REVIEW_APPLICATIONS' | null;
 }
 
 type MatchWithRelations = Awaited<ReturnType<typeof loadMatches>>[number];
@@ -49,9 +58,35 @@ async function loadMatches(prisma: PrismaClient, where: object) {
       court: true,
       players: { include: { user: { select: { id: true, firstName: true, lastName: true, level: true } } } },
       applications: { select: { userId: true, status: true } },
+      result: { select: { enteredById: true, confirmedAt: true, disputedAt: true } },
     },
     orderBy: { startsAt: 'asc' },
   });
+}
+
+function resolveAction(
+  match: MatchWithRelations,
+  viewerId: string | undefined,
+): MatchCard['needsAction'] {
+  if (!viewerId) return null;
+
+  const isPlayer = match.players.some((player) => player.userId === viewerId);
+  const pending = match.applications.filter((app) => app.status === 'PENDING').length;
+
+  if (match.creatorId === viewerId && match.status === 'OPEN' && pending > 0) {
+    return 'REVIEW_APPLICATIONS';
+  }
+  if (!isPlayer) return null;
+
+  if (match.status === 'PLAYED' && match.result === null) return 'ENTER_SCORE';
+
+  const awaitingConfirmation =
+    match.result !== null &&
+    match.result.confirmedAt === null &&
+    match.result.disputedAt === null &&
+    match.result.enteredById !== viewerId;
+
+  return awaitingConfirmation ? 'CONFIRM_SCORE' : null;
 }
 
 function toCard(match: MatchWithRelations, viewerId?: string): MatchCard {
@@ -85,6 +120,7 @@ function toCard(match: MatchWithRelations, viewerId?: string): MatchCard {
       viewerId !== undefined &&
       match.applications.some((app) => app.userId === viewerId && app.status === 'PENDING'),
     pendingApplications: match.applications.filter((app) => app.status === 'PENDING').length,
+    needsAction: resolveAction(match, viewerId),
   };
 }
 
@@ -94,11 +130,18 @@ export async function listMyMatches(
   input: { userId: string; now: Date },
 ): Promise<MatchCard[]> {
   const matches = await loadMatches(prisma, {
-    players: { some: { userId: input.userId } },
+    OR: [{ players: { some: { userId: input.userId } } }, { creatorId: input.userId }],
     status: { in: ['OPEN', 'FILLED', 'PLAYED'] },
   });
 
-  return matches.map((match) => toCard(match, input.userId));
+  // Матчи, ждущие действия, идут первыми: главный экран показывает их наверху,
+  // и сортировать по дате там, где счёт не введён третьи сутки, бессмысленно.
+  return matches
+    .map((match) => toCard(match, input.userId))
+    .sort((a, b) => {
+      if (Boolean(a.needsAction) !== Boolean(b.needsAction)) return a.needsAction ? -1 : 1;
+      return a.startsAt.getTime() - b.startsAt.getTime();
+    });
 }
 
 /**

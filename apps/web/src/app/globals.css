@@ -1,37 +1,63 @@
 @import 'tailwindcss';
 
 /**
- * Светлая тема.
+ * Токены PaddelBase.
  *
- * ТЗ §9 предлагало тёмную, аргументируя чтением на солнце. Заказчик выбрал
- * светлую, поэтому солнце отрабатывается иначе: фон не чисто-белый (меньше
- * бликов), контраст текста держится заметно выше минимальных 4.5:1, а границы
- * карточек различимы без теней — на ярком свете тени первыми и пропадают.
+ * Палитра взята с корта, а не из абстрактной «светлой темы». Нейтралы —
+ * стекло, увиденное с торца: один холодный сине-зелёный тон, меняется только
+ * светлота. Акцент — зелень корта. Отдельный цвет мяча служит одному
+ * единственному смыслу: «сейчас твой ход».
  *
- * Акцент пришлось углубить. Зелёный из ТЗ (#3DDC84) на белом даёт для белого
- * текста контраст около 1.5:1 — кнопка была бы нечитаемой. #0A7A42 сохраняет
- * «зелёный корта» и даёт 5.4:1.
+ * Глубина одна на всё приложение — тонкое кольцо плюс мягкая тень. Границы
+ * остаются только там, где они действительно разделяют: поля ввода,
+ * разделители, пунктир пустого места.
  */
 @theme {
-  --color-bg: #f5f7fa;
+  /* --- Поверхности: один тон 200°, разная светлота --- */
+  --color-canvas: #f3f6f7;
   --color-surface: #ffffff;
-  --color-surface-raised: #eef2f7;
-  --color-border: #dde3ec;
-  --color-border-strong: #c4cedd;
-  --color-text: #101828;
-  --color-muted: #5a6779;
+  --color-sunken: #eef2f4;
+  --color-border: #dfe6e9;
+  --color-border-strong: #c2ced3;
 
+  /* --- Текст: четыре уровня --- */
+  --color-text: #16232a;
+  --color-text-secondary: #4c5a61;
+  --color-muted: #78868d;
+  --color-faint: #a3aeb3;
+
+  /* --- Зелень корта. Углублена до 5.4:1 с белым текстом на ней. --- */
   --color-accent: #0a7a42;
   --color-accent-ink: #ffffff;
   --color-accent-soft: #e4f4ea;
 
-  --color-warn: #b45309;
+  /* --- Мяч. Только «требуется ваше действие», больше нигде. --- */
+  --color-ball: #d7e84a;
+  --color-ball-ink: #232f08;
+  --color-ball-soft: #f6faddcc;
+
+  /* --- Предупреждение: что-то идёт не так, но действия не ждут --- */
+  --color-warn: #a45a06;
   --color-warn-soft: #fdf3e4;
-  --color-danger: #c0342b;
+  --color-danger: #b8302a;
   --color-danger-soft: #fdeceb;
 
-  --radius-card: 12px;
-  --radius-control: 8px;
+  /* --- Радиусы: концентричные при вложении --- */
+  --radius-chip: 6px;
+  --radius-control: 10px;
+  --radius-card: 16px;
+  --radius-sheet: 24px;
+
+  /* --- Глубина. Одна стратегия: кольцо + мягкая тень. --- */
+  --shadow-raise: 0 0 0 1px rgb(22 35 42 / 0.06), 0 1px 2px -1px rgb(22 35 42 / 0.08),
+    0 2px 6px -2px rgb(22 35 42 / 0.05);
+  --shadow-lift: 0 0 0 1px rgb(22 35 42 / 0.07), 0 2px 4px -2px rgb(22 35 42 / 0.08),
+    0 8px 18px -6px rgb(22 35 42 / 0.12);
+  --shadow-float: 0 0 0 1px rgb(22 35 42 / 0.07), 0 10px 24px -8px rgb(22 35 42 / 0.18),
+    0 24px 48px -16px rgb(22 35 42 / 0.16);
+
+  /* --- Движение: только ease-out, только transform и opacity --- */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -43,23 +69,80 @@
   }
 
   body {
-    background-color: var(--color-bg);
+    background-color: var(--color-canvas);
     color: var(--color-text);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  /* Видимый фокус с клавиатуры — обязательный минимум качества (ТЗ §9). */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    /* Крупный текст оптически разъезжается на дефолтном трекинге. */
+    letter-spacing: -0.011em;
+  }
+
+  p,
+  li {
+    text-wrap: pretty;
+  }
+
+  /* Видимый фокус с клавиатуры — обязательный минимум (ТЗ §9). */
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
     border-radius: 4px;
   }
 
-  /* Цифры уровня — главный контент, а не подпись: им нужна табличная ширина,
-     чтобы значение не «прыгало» при изменении. */
+  /* Цифры уровня и счёта — главный контент. Табличная ширина не даёт
+     значению дёргаться при изменении. */
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Подпись над значением: мелкая, разреженная, приглушённая. Тройка
+     «размер + насыщенность + цвет» держит иерархию лучше, чем один размер. */
+  .label {
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /* Нажатие должно ощущаться. 0.97 — предел, ниже уже читается как сбой. */
+  .pressable {
+    transition:
+      transform 140ms var(--ease-out),
+      box-shadow 140ms var(--ease-out);
+  }
+
+  .pressable:active {
+    transform: scale(0.975);
+  }
+
+  /* Горизонтальные ленты: край экрана не должен обрезать карточку насухо. */
+  .rail {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: -16px;
+    padding-inline: 16px;
+    scroll-padding-inline: 16px;
+  }
+
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rail > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
   }
 }
 
@@ -69,5 +152,9 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .pressable:active {
+    transform: none;
   }
 }
