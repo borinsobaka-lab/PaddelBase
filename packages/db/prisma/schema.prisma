@@ -238,6 +238,11 @@ model MatchResult {
   winnerTeam Int
 
   enteredById String
+  /// Момент ввода счёта, от которого отсчитываются 48 часов до автоподтверждения.
+  /// Отдельно от createdAt намеренно: createdAt ставит СУБД своими часами, и
+  /// правило, завязанное на него, невозможно ни воспроизвести при пересчёте
+  /// истории, ни проверить тестом.
+  enteredAt   DateTime
   /// Подтверждает игрок из пары, которая счёт НЕ вводила (ТЗ §3.5 п. 3 уточнён:
   /// иначе проигравший, сам введя счёт, подтверждал бы его сам себе).
   confirmedById String?
@@ -257,6 +262,7 @@ model MatchResult {
   confirmedBy User? @relation("ResultConfirmedBy", fields: [confirmedById], references: [id])
 
   @@index([confirmedAt])
+  @@index([confirmedAt, disputedAt, enteredAt])
   @@map("match_results")
   @@schema("app")
 }

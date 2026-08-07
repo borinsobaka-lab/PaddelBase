@@ -120,6 +120,7 @@ CREATE TABLE "app"."match_results" (
     "gamesB" INTEGER NOT NULL,
     "winnerTeam" INTEGER NOT NULL,
     "enteredById" TEXT NOT NULL,
+    "enteredAt" TIMESTAMP(3) NOT NULL,
     "confirmedById" TEXT,
     "confirmedAt" TIMESTAMP(3),
     "disputedAt" TIMESTAMP(3),
@@ -342,6 +343,9 @@ CREATE UNIQUE INDEX "match_results_matchId_key" ON "app"."match_results"("matchI
 
 -- CreateIndex
 CREATE INDEX "match_results_confirmedAt_idx" ON "app"."match_results"("confirmedAt");
+
+-- CreateIndex
+CREATE INDEX "match_results_confirmedAt_disputedAt_enteredAt_idx" ON "app"."match_results"("confirmedAt", "disputedAt", "enteredAt");
 
 -- CreateIndex
 CREATE INDEX "tournaments_status_startsAt_idx" ON "app"."tournaments"("status", "startsAt");

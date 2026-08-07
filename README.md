@@ -12,6 +12,7 @@ apps/web              — Next.js приложение              (ещё не
 packages/rating       — движок рейтинга, чистая логика   ✔
 packages/tournament   — генераторы сеток, чистая логика  ✔
 packages/db           — Prisma-схема и клиент            ✔
+packages/core         — доменные операции над БД          ✔
 ```
 
 `packages/rating` и `packages/tournament` не импортируют ничего из `web` и `db`:
@@ -25,6 +26,17 @@ packages/db           — Prisma-схема и клиент            ✔
 pnpm install
 pnpm test         # все пакеты
 pnpm typecheck
+```
+
+Часть тестов `packages/core` работает против настоящего PostgreSQL — логика
+опирается на транзакции и запросы по связям, подменять это заглушкой
+бессмысленно. Без `TEST_DATABASE_URL` они пропускаются:
+
+```bash
+createdb paddelbase_test
+export TEST_DATABASE_URL=postgresql://localhost:5432/paddelbase_test
+DATABASE_URL=$TEST_DATABASE_URL DIRECT_URL=$TEST_DATABASE_URL pnpm db:deploy
+pnpm --filter @paddelbase/core test
 ```
 
 ## База данных
