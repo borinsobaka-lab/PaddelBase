@@ -1,4 +1,4 @@
-import { listMyMatches, listOpenMatches, listOpenTournaments } from '@paddelbase/core';
+import { countUnread, listMyMatches, listOpenMatches, listOpenTournaments } from '@paddelbase/core';
 import { prisma } from '@paddelbase/db';
 import { toNumber } from '@paddelbase/db';
 import { effectiveReliability, formatLevel, levelCategory } from '@paddelbase/rating';
@@ -21,10 +21,11 @@ export default async function HomePage({
   const user = await requireOnboardedUser();
   const now = new Date();
 
-  const [myMatches, openMatches, tournaments] = await Promise.all([
+  const [myMatches, openMatches, tournaments, unread] = await Promise.all([
     listMyMatches(prisma, { userId: user.id, now }),
     listOpenMatches(prisma, { viewerId: user.id, now, limit: 10 }),
     listOpenTournaments(prisma, { now, limit: 10 }),
+    countUnread(prisma, { userId: user.id }),
   ]);
 
   const level = toNumber(user.level);
@@ -40,7 +41,8 @@ export default async function HomePage({
   return (
     <AppShell>
       <main className="flex flex-col gap-6 pt-6">
-        <Link href="/profile" className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <Link href="/profile" className="flex flex-1 items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="flex size-11 items-center justify-center rounded-full bg-surface-raised font-medium">
               {user.firstName[0]?.toUpperCase()}
@@ -55,11 +57,28 @@ export default async function HomePage({
             </div>
           </div>
 
-          <div className="text-right">
-            <p className="tabular text-2xl font-semibold leading-none">{formatLevel(level)}</p>
-            <p className="text-xs text-muted">{levelCategory(level)}</p>
-          </div>
-        </Link>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="tabular text-2xl font-semibold leading-none">{formatLevel(level)}</p>
+              <p className="text-xs text-muted">{levelCategory(level)}</p>
+            </div>
+            </div>
+          </Link>
+
+          {/* Колокольчик со счётчиком непрочитанных (ТЗ §5.1). */}
+          <Link
+            href="/notifications"
+            aria-label={unread > 0 ? `Уведомления, непрочитанных: ${unread}` : 'Уведомления'}
+            className="relative flex size-11 items-center justify-center rounded-full border border-border bg-surface"
+          >
+            <BellIcon />
+            {unread > 0 ? (
+              <span className="tabular absolute -right-0.5 -top-0.5 flex min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-medium text-accent-ink">
+                {unread > 99 ? '99+' : unread}
+              </span>
+            ) : null}
+          </Link>
+        </div>
 
         {welcome ? (
           <Card className="border-accent/40 bg-accent-soft">
@@ -104,6 +123,15 @@ export default async function HomePage({
 
       <CreateButton />
     </AppShell>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+      <path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7" />
+      <path d="M10.5 20a2 2 0 0 0 3 0" />
+    </svg>
   );
 }
 
