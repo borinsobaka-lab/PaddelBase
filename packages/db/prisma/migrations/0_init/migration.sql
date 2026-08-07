@@ -25,6 +25,9 @@ CREATE TYPE "app"."RoundStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED');
 -- CreateEnum
 CREATE TYPE "app"."NotificationType" AS ENUM ('MATCH_APPLICATION', 'APPLICATION_ACCEPTED', 'APPLICATION_REJECTED', 'MATCH_FILLED', 'MATCH_REMINDER', 'RESULT_ENTER', 'RESULT_CONFIRM', 'RATING_CHANGED', 'TOURNAMENT_ROUND', 'POST_COMMENT');
 
+-- CreateEnum
+CREATE TYPE "app"."JobStatus" AS ENUM ('RUNNING', 'OK', 'FAILED');
+
 -- CreateTable
 CREATE TABLE "app"."users" (
     "id" TEXT NOT NULL,
@@ -305,6 +308,20 @@ CREATE TABLE "app"."notifications" (
     CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "app"."job_runs" (
+    "id" TEXT NOT NULL,
+    "job" TEXT NOT NULL,
+    "windowKey" TEXT NOT NULL,
+    "startedAt" TIMESTAMP(3) NOT NULL,
+    "finishedAt" TIMESTAMP(3),
+    "status" "app"."JobStatus" NOT NULL DEFAULT 'RUNNING',
+    "details" JSONB,
+    "error" TEXT,
+
+    CONSTRAINT "job_runs_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_telegramId_key" ON "app"."users"("telegramId");
 
@@ -400,6 +417,12 @@ CREATE INDEX "notifications_userId_isRead_idx" ON "app"."notifications"("userId"
 
 -- CreateIndex
 CREATE INDEX "notifications_userId_createdAt_idx" ON "app"."notifications"("userId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "job_runs_job_startedAt_idx" ON "app"."job_runs"("job", "startedAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "job_runs_job_windowKey_key" ON "app"."job_runs"("job", "windowKey");
 
 -- AddForeignKey
 ALTER TABLE "app"."matches" ADD CONSTRAINT "matches_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "app"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

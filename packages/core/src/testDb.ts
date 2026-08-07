@@ -19,6 +19,7 @@ export const testPrisma: PrismaClient = testDatabaseUrl
 
 /** Порядок важен: сначала зависимые таблицы. */
 export async function resetDatabase(prisma: PrismaClient = testPrisma): Promise<void> {
+  await prisma.jobRun.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.ratingEvent.deleteMany();
   await prisma.tournamentMatchPlayer.deleteMany();

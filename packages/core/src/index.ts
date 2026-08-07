@@ -4,3 +4,6 @@ export * from './matchResult.js';
 export * from './matchLifecycle.js';
 export * from './tournamentLifecycle.js';
 export * from './recompute.js';
+export * from './community.js';
+export * from './jobs.js';
+export * from './metrics.js';

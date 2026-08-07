@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "recompute": "tsx src/cli/recompute.ts"
+    "recompute": "tsx src/cli/recompute.ts",
+    "metrics": "tsx src/cli/metrics.ts"
   },
   "dependencies": {
     "@paddelbase/db": "workspace:*",
