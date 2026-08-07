@@ -11,7 +11,7 @@
  * Версия конфига. Пишется в каждый RatingEvent (ТЗ §3.10), чтобы можно было
  * отличить события, посчитанные по разным наборам коэффициентов.
  */
-export const RATING_CONFIG_VERSION = '1.0.0';
+export const RATING_CONFIG_VERSION = '1.1.0';
 
 export type MatchFormat = 'match' | 'americano' | 'mexicano' | 'teamTournament';
 export type MatchDuration = 'oneSet' | 'twoSets' | 'threeSets';
@@ -21,8 +21,12 @@ export interface RatingConfig {
   SCALE_MIN: number;
   SCALE_MAX: number;
   /**
-   * Масштабный делитель в формуле ожидания. Чем меньше — тем круче кривая:
-   * при D = 1.0 разница в 1.0 уровня даёт ожидание ≈ 0.91 в пользу сильной пары.
+   * Масштабный делитель в формуле ожидания. Чем меньше — тем круче кривая.
+   *
+   * ТЗ §3.8 задавало 1.0. Принято 2.0: при 1.0 фаворит систематически терял
+   * рейтинг за обычную победу, потому что E калибруется как вероятность
+   * победы, а S — это смесь факта победы и доли геймов, которая к краям шкалы
+   * прижимается к 0.5 куда сильнее. Подробный разбор — в docs/decisions.md §3.
    */
   D: number;
   /**
@@ -72,7 +76,7 @@ function envNumber(key: string, fallback: number): number {
 export const RATING_CONFIG: RatingConfig = {
   SCALE_MIN: envNumber('RATING_SCALE_MIN', 0.0),
   SCALE_MAX: envNumber('RATING_SCALE_MAX', 7.0),
-  D: envNumber('RATING_D', 1.0),
+  D: envNumber('RATING_D', 2.0),
   W_WIN: envNumber('RATING_W_WIN', 0.5),
   K_MIN: envNumber('RATING_K_MIN', 0.06),
   K_MAX: envNumber('RATING_K_MAX', 0.4),

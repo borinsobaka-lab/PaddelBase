@@ -5,6 +5,13 @@ import { computeMatchDeltas, expectedScore, resolveK, resolveRepeatWeight } from
 import type { MatchRatingInput, PlayerSnapshot } from './types.js';
 
 /**
+ * Контрольные кейсы ТЗ §3.7 посчитаны при D = 1.0. Продуктовый дефолт с тех пор
+ * изменён на 2.0 (см. docs/decisions.md §3), поэтому эти кейсы прогоняются с
+ * явным D = 1.0: они остаются якорем самой формулы, а не текущих констант.
+ */
+const TZ_CONFIG = withOverrides({ D: 1.0 });
+
+/**
  * Контрольные кейсы из ТЗ §3.7.
  *
  * В ТЗ фикстура описана как «2 сета, счёт по геймам 6:3». Девяти геймов в двух
@@ -35,8 +42,8 @@ function levelsById(deltas: { playerId: string; levelAfter: number }[]): Record<
   return Object.fromEntries(deltas.map((d) => [d.playerId, d.levelAfter]));
 }
 
-describe('ТЗ §3.7 — контрольный кейс 1: ожидаемая победа', () => {
-  const result = computeMatchDeltas(baseInput());
+describe('ТЗ §3.7 — контрольный кейс 1: ожидаемая победа (D = 1.0)', () => {
+  const result = computeMatchDeltas(baseInput(), TZ_CONFIG);
 
   it('считает уровни пар и ожидание', () => {
     expect(result.breakdown.levelA).toBe(3.75);
@@ -66,8 +73,8 @@ describe('ТЗ §3.7 — контрольный кейс 1: ожидаемая �
   });
 });
 
-describe('ТЗ §3.7 — контрольный кейс 2: апсет', () => {
-  const result = computeMatchDeltas(baseInput({ scoreA: 3, scoreB: 6, winner: 'B' }));
+describe('ТЗ §3.7 — контрольный кейс 2: апсет (D = 1.0)', () => {
+  const result = computeMatchDeltas(baseInput({ scoreA: 3, scoreB: 6, winner: 'B' }), TZ_CONFIG);
 
   it('даёт уровни из ТЗ', () => {
     expect(result.breakdown.actualA).toBeCloseTo(0.1667, 4);
@@ -214,59 +221,76 @@ describe('защита от накрутки (ТЗ §3.5)', () => {
 });
 
 /**
- * Задокументированное следствие пары D = 1.0 и W_WIN = 0.5: при разрыве уровней
- * от ~0.6 фаворит теряет рейтинг за обычную победу, потому что для «оправдания
- * ожиданий» ему нужна доля геймов выше, чем достижима на практике.
+ * Главное продуктовое свойство шкалы: обычная победа не должна снижать рейтинг.
  *
- * Тест закрепляет это поведение намеренно — чтобы изменение D или W_WIN при
- * калибровке на реальных данных было видимым, а не молчаливым.
+ * Оно определяется парой D и W_WIN. При D = 1.0 из ТЗ фаворит, сильнее соперника
+ * на 1.0 уровня, терял рейтинг за победу 6:3, 6:4 — для «оправдания ожиданий»
+ * ему требовалась доля геймов, недостижимая на практике. Рабочее значение D = 2.0
+ * это чинит, сохраняя защиту от фарма слабых при больших разрывах.
  */
-describe('поведение фаворита при крутой кривой ожиданий', () => {
-  const favouriteWins = (gap: number, scoreA: number, scoreB: number) =>
-    computeMatchDeltas({
-      teamA: [
-        { id: 'f1', level: 3.0 + gap, reliability: 0.9 },
-        { id: 'f2', level: 3.0 + gap, reliability: 0.9 },
-      ],
-      teamB: [
-        { id: 'u1', level: 3.0, reliability: 0.9 },
-        { id: 'u2', level: 3.0, reliability: 0.9 },
-      ],
-      scoreA,
-      scoreB,
-      winner: 'A',
-      format: 'match',
-      duration: 'twoSets',
-      repeatCount: 1,
-    });
-
-  it('при D = 1.0 фаворит на 1.0 уровня теряет рейтинг за победу 12:7', () => {
-    expect(favouriteWins(1.0, 12, 7).deltas.find((d) => d.playerId === 'f1')!.delta).toBeLessThan(0);
-  });
-
-  it('при более пологой кривой (D = 2.0) та же победа даёт прирост', () => {
-    const flat = withOverrides({ D: 2.0 });
-    const result = computeMatchDeltas(
+describe('фаворит и обычная победа', () => {
+  const favouriteWins = (
+    gap: number,
+    scoreA: number,
+    scoreB: number,
+    config = RATING_CONFIG,
+  ): number =>
+    computeMatchDeltas(
       {
         teamA: [
-          { id: 'f1', level: 4.0, reliability: 0.9 },
-          { id: 'f2', level: 4.0, reliability: 0.9 },
+          { id: 'f1', level: 3.0 + gap, reliability: 0.9 },
+          { id: 'f2', level: 3.0 + gap, reliability: 0.9 },
         ],
         teamB: [
           { id: 'u1', level: 3.0, reliability: 0.9 },
           { id: 'u2', level: 3.0, reliability: 0.9 },
         ],
-        scoreA: 12,
-        scoreB: 7,
+        scoreA,
+        scoreB,
         winner: 'A',
         format: 'match',
         duration: 'twoSets',
         repeatCount: 1,
       },
-      flat,
-    );
+      config,
+    ).deltas.find((d) => d.playerId === 'f1')!.delta;
 
-    expect(result.deltas.find((d) => d.playerId === 'f1')!.delta).toBeGreaterThan(0);
+  // 6:4, 6:4 — самая заурядная победа в двух сетах.
+  for (const gap of [0.25, 0.5, 0.75, 1.0]) {
+    it(`разрыв ${gap.toFixed(2)}: победа 6:4, 6:4 не снижает рейтинг`, () => {
+      expect(favouriteWins(gap, 12, 8)).toBeGreaterThan(0);
+    });
+  }
+
+  it('при D = 1.0 из ТЗ та же победа при разрыве 1.0 снижала рейтинг', () => {
+    expect(favouriteWins(1.0, 12, 8, TZ_CONFIG)).toBeLessThan(0);
+  });
+
+  it('при большом разрыве обычной победы уже недостаточно — фарм слабых не окупается', () => {
+    // Разрыв 2.0: чтобы выйти в плюс, нужно не меньше 6:1, 6:1.
+    expect(favouriteWins(2.0, 12, 8)).toBeLessThan(0);
+    expect(favouriteWins(2.0, 12, 2)).toBeGreaterThan(0);
+  });
+
+  it('апсет остаётся сильным сигналом: аутсайдер получает заметно больше', () => {
+    const underdogGain = computeMatchDeltas({
+      teamA: [
+        { id: 'u1', level: 3.0, reliability: 0.9 },
+        { id: 'u2', level: 3.0, reliability: 0.9 },
+      ],
+      teamB: [
+        { id: 'f1', level: 4.0, reliability: 0.9 },
+        { id: 'f2', level: 4.0, reliability: 0.9 },
+      ],
+      scoreA: 12,
+      scoreB: 8,
+      winner: 'A',
+      format: 'match',
+      duration: 'twoSets',
+      repeatCount: 1,
+    }).deltas.find((d) => d.playerId === 'u1')!.delta;
+
+    expect(underdogGain).toBeGreaterThan(favouriteWins(1.0, 12, 8) * 5);
   });
 });
 
@@ -301,7 +325,11 @@ describe('вспомогательные формулы', () => {
     expect(expectedScore(3.0, 4.0) + expectedScore(4.0, 3.0)).toBeCloseTo(1, 10);
   });
 
-  it('разница в 1.0 уровня даёт ожидание ≈ 0.91', () => {
-    expect(expectedScore(4.0, 3.0)).toBeCloseTo(0.909, 3);
+  it('при рабочем D = 2.0 разница в 1.0 уровня даёт ожидание ≈ 0.76', () => {
+    expect(expectedScore(4.0, 3.0)).toBeCloseTo(0.76, 2);
+  });
+
+  it('при D = 1.0 из ТЗ та же разница давала ≈ 0.91', () => {
+    expect(expectedScore(4.0, 3.0, TZ_CONFIG)).toBeCloseTo(0.909, 3);
   });
 });

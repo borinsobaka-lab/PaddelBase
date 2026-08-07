@@ -8,22 +8,9 @@ import { PrismaClient } from '@prisma/client';
 
 import { toLevelDecimal } from '../src/decimal.js';
 import { toJson } from '../src/json.js';
+import { DEFAULT_COURTS } from './courts.js';
 
 const prisma = new PrismaClient();
-
-/**
- * ВНИМАНИЕ: корты ниже — заглушки для локальной разработки, а не реальные клубы.
- *
- * Настоящий справочник кортов Грузии нужно собрать отдельно (название, адрес,
- * координаты, число кортов) и загрузить либо через админку, либо отдельным
- * импортом. Выдумывать названия и адреса клубов здесь нельзя: они попадут в
- * интерфейс и будут выглядеть как достоверные данные.
- */
-const PLACEHOLDER_COURTS = [
-  { name: 'Клуб 1 (заглушка)', city: 'Тбилиси', address: 'Адрес не заполнен', courtsQty: 4 },
-  { name: 'Клуб 2 (заглушка)', city: 'Тбилиси', address: 'Адрес не заполнен', courtsQty: 2 },
-  { name: 'Клуб 3 (заглушка)', city: 'Батуми', address: 'Адрес не заполнен', courtsQty: 3 },
-];
 
 interface SeedPlayer {
   firstName: string;
@@ -115,10 +102,18 @@ const TEST_PLAYERS: SeedPlayer[] = [
 ];
 
 async function main(): Promise<void> {
-  for (const court of PLACEHOLDER_COURTS) {
-    const existing = await prisma.court.findFirst({ where: { name: court.name } });
-    if (existing) continue;
-    await prisma.court.create({ data: court });
+  // Upsert по паре «название + город»: повторный запуск сида обновляет
+  // справочник, а не плодит дубликаты.
+  for (const court of DEFAULT_COURTS) {
+    const existing = await prisma.court.findFirst({
+      where: { name: court.name, city: court.city },
+    });
+
+    if (existing) {
+      await prisma.court.update({ where: { id: existing.id }, data: court });
+    } else {
+      await prisma.court.create({ data: court });
+    }
   }
 
   for (const [index, player] of TEST_PLAYERS.entries()) {
@@ -150,7 +145,7 @@ async function main(): Promise<void> {
   const courts = await prisma.court.count();
   const users = await prisma.user.count();
   console.log(`Готово: кортов ${courts}, пользователей ${users}.`);
-  console.log('Напоминание: справочник кортов заполнен заглушками, реальные данные нужно загрузить отдельно.');
+  console.log('Напоминание: справочник кортов временный — заменить на реальные клубы до запуска.');
 }
 
 main()
