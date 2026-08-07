@@ -1,4 +1,3 @@
-import { PrismaClient } from '@paddelbase/db';
 import { RATING_CONFIG, initialReliability } from '@paddelbase/rating';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -9,6 +8,7 @@ import {
   enterMatchResult,
   autoConfirmDueResults,
 } from './matchResult.js';
+import { resetDatabase, testDatabaseUrl, testPrisma as prisma } from './testDb.js';
 
 /**
  * Интеграционные тесты транзакции применения рейтинга (ТЗ §7).
@@ -21,29 +21,16 @@ import {
  *   TEST_DATABASE_URL=postgresql://... pnpm --filter @paddelbase/db migrate:deploy
  *   TEST_DATABASE_URL=postgresql://... pnpm --filter @paddelbase/core test
  */
-const url = process.env.TEST_DATABASE_URL;
-
-const prisma = url
-  ? new PrismaClient({ datasources: { db: { url } } })
-  : (null as unknown as PrismaClient);
 
 const START = new Date('2026-08-07T10:00:00Z');
 
-describe.skipIf(!url)('применение рейтинга по матчу', () => {
+describe.skipIf(!testDatabaseUrl)('применение рейтинга по матчу', () => {
   afterAll(async () => {
-    if (url) await prisma.$disconnect();
+    if (testDatabaseUrl) await prisma.$disconnect();
   });
 
   beforeEach(async () => {
-    // Порядок важен: сначала зависимые таблицы.
-    await prisma.notification.deleteMany();
-    await prisma.ratingEvent.deleteMany();
-    await prisma.matchResult.deleteMany();
-    await prisma.matchPlayer.deleteMany();
-    await prisma.matchApplication.deleteMany();
-    await prisma.match.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.court.deleteMany();
+    await resetDatabase();
   });
 
   async function makeCourt(): Promise<string> {
@@ -193,19 +180,13 @@ describe.skipIf(!url)('применение рейтинга по матчу', (
   });
 });
 
-describe.skipIf(!url)('правила подтверждения', () => {
+describe.skipIf(!testDatabaseUrl)('правила подтверждения', () => {
   afterAll(async () => {
-    if (url) await prisma.$disconnect();
+    if (testDatabaseUrl) await prisma.$disconnect();
   });
 
   beforeEach(async () => {
-    await prisma.notification.deleteMany();
-    await prisma.ratingEvent.deleteMany();
-    await prisma.matchResult.deleteMany();
-    await prisma.matchPlayer.deleteMany();
-    await prisma.match.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.court.deleteMany();
+    await resetDatabase();
   });
 
   async function setup(isRated = true): Promise<string> {
@@ -344,19 +325,13 @@ describe.skipIf(!url)('правила подтверждения', () => {
   });
 });
 
-describe.skipIf(!url)('защита от накрутки', () => {
+describe.skipIf(!testDatabaseUrl)('защита от накрутки', () => {
   afterAll(async () => {
-    if (url) await prisma.$disconnect();
+    if (testDatabaseUrl) await prisma.$disconnect();
   });
 
   beforeEach(async () => {
-    await prisma.notification.deleteMany();
-    await prisma.ratingEvent.deleteMany();
-    await prisma.matchResult.deleteMany();
-    await prisma.matchPlayer.deleteMany();
-    await prisma.match.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.court.deleteMany();
+    await resetDatabase();
   });
 
   async function seedPlayers(): Promise<void> {
