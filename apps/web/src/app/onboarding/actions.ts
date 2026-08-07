@@ -28,5 +28,5 @@ export async function submitOnboarding(
     throw error;
   }
 
-  redirect('/profile?welcome=1');
+  redirect('/home?welcome=1');
 }

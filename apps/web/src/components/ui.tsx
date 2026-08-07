@@ -26,7 +26,7 @@ export function Button({
   const styles =
     variant === 'primary'
       ? 'bg-accent text-accent-ink hover:bg-accent/90'
-      : 'border border-border text-text hover:bg-surface-raised';
+      : 'border border-border-strong bg-surface text-text hover:bg-surface-raised';
 
   return <button className={`${base} ${styles} ${className}`} {...props} />;
 }
@@ -52,7 +52,7 @@ export function Field({
 export function TextInput(props: ComponentProps<'input'>) {
   return (
     <input
-      className="min-h-11 w-full rounded-control border border-border bg-surface-raised px-3 text-base outline-none placeholder:text-muted focus:border-accent"
+      className="min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-base outline-none placeholder:text-muted focus:border-accent"
       {...props}
     />
   );
@@ -61,7 +61,7 @@ export function TextInput(props: ComponentProps<'input'>) {
 /** Сообщение об ошибке говорит, что произошло и что делать (ТЗ §9). */
 export function ErrorNote({ children }: { children: ReactNode }) {
   return (
-    <p role="alert" className="rounded-control bg-danger/10 px-3 py-2 text-sm text-danger">
+    <p role="alert" className="rounded-control bg-danger-soft px-3 py-2 text-sm text-danger">
       {children}
     </p>
   );

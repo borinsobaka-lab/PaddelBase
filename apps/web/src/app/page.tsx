@@ -7,5 +7,5 @@ export default async function IndexPage() {
 
   if (!user) redirect('/login');
   if (user.onboardingCompletedAt === null) redirect('/onboarding');
-  redirect('/profile');
+  redirect('/home');
 }

@@ -44,8 +44,8 @@ export function OnboardingForm() {
                     key={option.value}
                     className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-control border px-3 py-2 text-sm transition-colors ${
                       selected
-                        ? 'border-accent bg-accent/10'
-                        : 'border-border bg-surface-raised hover:border-muted'
+                        ? 'border-accent bg-accent-soft'
+                        : 'border-border bg-surface hover:border-border-strong'
                     }`}
                   >
                     <input

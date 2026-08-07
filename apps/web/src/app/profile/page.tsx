@@ -1,20 +1,21 @@
-import { fullName } from '@paddelbase/core';
-import { toNumber } from '@paddelbase/db';
+import { fullName, listMatchHistory } from '@paddelbase/core';
+import { prisma, toNumber } from '@paddelbase/db';
 import { effectiveReliability, formatLevel, type StartLevelResult } from '@paddelbase/rating';
 
+import Link from 'next/link';
+
+import { AppShell } from '@/components/AppShell';
 import { RatingBlock } from '@/components/RatingBlock';
 import { Button, Card } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 
+import { formatDay } from '@/lib/format';
+
 import { signOut } from './actions';
 
-export default async function ProfilePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ welcome?: string }>;
-}) {
+export default async function ProfilePage() {
   const user = await requireOnboardedUser();
-  const { welcome } = await searchParams;
+  const history = await listMatchHistory(prisma, { userId: user.id, limit: 30 });
 
   const level = toNumber(user.level);
   const reliability = effectiveReliability(
@@ -27,8 +28,10 @@ export default async function ProfilePage({
   );
 
   const breakdown = user.startLevelBreakdown as unknown as StartLevelResult | null;
+  const wins = history.filter((entry) => entry.won).length;
 
   return (
+    <AppShell>
     <main className="flex flex-col gap-4 pb-8">
       <header className="flex items-center justify-between pt-8">
         <div>
@@ -36,15 +39,6 @@ export default async function ProfilePage({
           {user.city ? <p className="text-sm text-muted">{user.city}</p> : null}
         </div>
       </header>
-
-      {welcome ? (
-        <Card className="border-accent/40 bg-accent/5">
-          <p className="text-sm">
-            Готово. Это стартовая оценка по анкете — она намеренно приблизительная. Первые матчи
-            будут двигать уровень заметно, потом он стабилизируется.
-          </p>
-        </Card>
-      ) : null}
 
       <RatingBlock level={level} reliability={reliability} ratedMatches={user.ratedMatchesCount} />
 
@@ -54,10 +48,55 @@ export default async function ProfilePage({
         <h2 className="font-medium">Статистика</h2>
         <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
           <Stat label="Рейтинговых матчей" value={String(user.ratedMatchesCount)} />
+          <Stat label="Побед" value={`${wins} из ${history.length}`} />
           <Stat label="Надёжность" value={`${Math.round(reliability * 100)} %`} />
           <Stat label="Стартовый уровень" value={formatLevel(toNumber(user.startLevel))} />
           <Stat label="В приложении с" value={user.createdAt.toLocaleDateString('ru-RU')} />
         </dl>
+      </Card>
+
+      <Card>
+        <h2 className="font-medium">История матчей</h2>
+        {history.length === 0 ? (
+          <p className="mt-2 text-sm text-muted">
+            Сыгранных матчей пока нет. После первого здесь появится счёт и изменение уровня.
+          </p>
+        ) : (
+          <ul className="mt-3 flex flex-col gap-2">
+            {history.map((entry) => (
+              <li key={entry.matchId}>
+                <Link
+                  href={`/matches/${entry.matchId}`}
+                  className="flex items-center justify-between gap-3 rounded-control border border-border p-3 text-sm transition-colors hover:border-border-strong"
+                >
+                  <span>
+                    <span className={entry.won ? 'font-medium text-accent' : 'font-medium'}>
+                      {entry.won ? 'Победа' : 'Поражение'}
+                    </span>
+                    <span className="tabular ml-2">{entry.score}</span>
+                    <span className="mt-0.5 block text-xs text-muted">
+                      {formatDay(entry.playedAt)} · {entry.courtName}
+                      {entry.partnerName ? ` · с ${entry.partnerName}` : ''}
+                    </span>
+                  </span>
+
+                  {entry.delta !== null ? (
+                    <span
+                      className={`tabular shrink-0 text-sm font-medium ${
+                        entry.delta >= 0 ? 'text-accent' : 'text-danger'
+                      }`}
+                    >
+                      {entry.delta >= 0 ? '+' : ''}
+                      {entry.delta.toFixed(3)}
+                    </span>
+                  ) : (
+                    <span className="shrink-0 text-xs text-muted">без рейтинга</span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       <form action={signOut}>
@@ -66,6 +105,7 @@ export default async function ProfilePage({
         </Button>
       </form>
     </main>
+    </AppShell>
   );
 }
 

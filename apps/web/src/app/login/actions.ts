@@ -18,7 +18,7 @@ export async function signIn(_previous: LoginState, formData: FormData): Promise
   try {
     const result = await signInByName(prisma, { name });
     await createSession(result.userId);
-    destination = result.needsOnboarding ? '/onboarding' : '/profile';
+    destination = result.needsOnboarding ? '/onboarding' : '/home';
   } catch (error: unknown) {
     if (error instanceof OnboardingError) return { error: error.message };
     throw error;

@@ -1,5 +1,7 @@
 import { formatLevel, levelCategory, matchesUntilCalibrated } from '@paddelbase/rating';
 
+import { plural, ratedMatchesLabel } from '@/lib/format';
+
 /**
  * Сигнатурный элемент приложения (ТЗ §9): крупная цифра уровня с дугой
  * надёжности вокруг неё, которая замыкается по мере калибровки.
@@ -72,10 +74,10 @@ export function RatingBlock({
             Он уточнится после первых рейтинговых матчей.
           </>
         ) : calibrated ? (
-          <>Уровень подтверждён · {ratedMatches} рейтинговых матчей</>
+          <>Уровень подтверждён · {ratedMatchesLabel(ratedMatches)}</>
         ) : (
           <>
-            Калибровка: ещё {remaining} {matchWord(remaining)}
+            Калибровка: ещё {remaining} {plural(remaining, 'матч', 'матча', 'матчей')}
             <br />
             До этого уровень будет заметно меняться
           </>
@@ -83,12 +85,4 @@ export function RatingBlock({
       </p>
     </section>
   );
-}
-
-function matchWord(count: number): string {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 === 1 && mod100 !== 11) return 'матч';
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'матча';
-  return 'матчей';
 }

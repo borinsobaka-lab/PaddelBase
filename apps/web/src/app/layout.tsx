@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0e1116',
+  themeColor: '#f5f7fa',
   width: 'device-width',
   initialScale: 1,
   // Масштабирование не запрещаем: у корта в солнце это единственный способ
