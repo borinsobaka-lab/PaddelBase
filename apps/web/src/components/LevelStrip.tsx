@@ -1,4 +1,4 @@
-import { matchesUntilCalibrated } from '@paddelbase/rating';
+import { levelCategory, matchesUntilCalibrated } from '@paddelbase/rating';
 import Link from 'next/link';
 
 import { LevelDial } from './LevelDial';
@@ -28,20 +28,25 @@ export function LevelStrip({
   return (
     <Link
       href="/profile"
-      className="pressable flex items-center gap-3.5 rounded-card bg-surface p-3.5 shadow-raise hover:shadow-lift"
+      className="pressable flex items-center gap-4 rounded-card bg-surface p-4 shadow-raise hover:shadow-lift"
     >
       <LevelDial level={level} reliability={reliability} />
 
       <div className="min-w-0 flex-1">
-        <p className="label">Ваш уровень</p>
-        <p className="mt-1 text-sm font-medium leading-snug">
+        {/* Категория переехала сюда из диска: на 60 px буква нечитаема, а
+            здесь она стоит рядом со словом «уровень» и наконец что-то
+            объясняет. */}
+        <p className="label">
+          Ваш уровень · <span className="figure">{levelCategory(level)}</span>
+        </p>
+        <p className="mt-1 text-body font-medium leading-snug">
           {unrated
             ? 'Пока не подтверждён'
             : calibrated
               ? 'Подтверждён'
               : `Калибровка · ещё ${remaining} ${plural(remaining, 'матч', 'матча', 'матчей')}`}
         </p>
-        <p className="mt-0.5 text-[13px] text-muted">
+        <p className="mt-0.5 text-small text-muted">
           {unrated ? 'Уточнится после первых матчей' : ratedMatchesLabel(ratedMatches)}
         </p>
       </div>

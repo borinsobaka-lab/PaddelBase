@@ -50,15 +50,15 @@ export default async function TournamentPage({ params }: { params: Promise<{ id:
           третьей строкой и обычным весом: он меняется сам, и выделять его
           наравне с названием незачем. */}
       <header className="pt-3">
-        <h1 className="text-[26px] font-semibold leading-tight">
+        <h1 className="text-h1 font-semibold leading-tight">
           {TOURNAMENT_FORMAT_NAMES[tournament.format]}
         </h1>
-        <p className="mt-1.5 text-[15px] text-text-secondary">
-          <span className="tabular">{formatTime(tournament.startsAt)}</span>
+        <p className="mt-1 text-body text-text-secondary">
+          <span className="figure">{formatTime(tournament.startsAt)}</span>
           {' · '}
           {formatDay(tournament.startsAt)} · {tournament.courtName}
         </p>
-        <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
+        <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-small text-muted">
           <span>{STATUS_NAMES[tournament.status] ?? tournament.status}</span>
           {tournament.isRated ? null : (
             <>

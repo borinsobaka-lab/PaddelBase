@@ -4,6 +4,14 @@ const nextConfig = {
   // реально используемые зависимости вместо всего node_modules монорепо.
   output: 'standalone',
   outputFileTracingRoot: new URL('../../', import.meta.url).pathname,
+
+  // Движок Prisma — бинарник, который никто не импортирует по имени: он
+  // подгружается по вычисленному пути. Трассировщик Next.js такого не видит и
+  // в standalone его не кладёт, а приложение падает на первом же запросе к
+  // базе. Указываем явно.
+  outputFileTracingIncludes: {
+    '/**': ['../../node_modules/.pnpm/@prisma+client@*/node_modules/.prisma/client/**'],
+  },
   transpilePackages: [
     '@paddelbase/core',
     '@paddelbase/db',

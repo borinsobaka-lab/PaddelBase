@@ -95,7 +95,7 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
                   label={
                     <>
                       <span className="block font-medium leading-snug">{option.title}</span>
-                      <span className="mt-0.5 block text-xs text-muted">{option.description}</span>
+                      <span className="mt-0.5 block text-small text-muted">{option.description}</span>
                     </>
                   }
                 />
@@ -174,7 +174,7 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
           />
 
           {!isTeam && fullRotationRounds !== null ? (
-            <p className="text-xs text-muted">
+            <p className="text-small text-muted">
               При {participants} игроках полная ротация занимает {fullRotationRounds}{' '}
               {fullRotationRounds === 1 ? 'раунд' : 'раундов'} — тогда каждый сыграет в паре с
               каждым ровно один раз.{' '}
@@ -191,7 +191,7 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
           ) : null}
 
           {restingPerRound > 0 ? (
-            <p className="text-xs text-warn">
+            <p className="text-small text-warn">
               Каждый раунд {restingPerRound}{' '}
               {restingPerRound === 1 ? 'участник будет отдыхать' : 'участников будут отдыхать'}:
               кортов не хватает на всех. Пропуски распределятся поровну.
@@ -225,7 +225,7 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
             </Select>
           </Field>
 
-          <Field label="Взнос, ₾" hint="Необязательно">
+          <Field label="Взнос, лари" hint="Необязательно">
             <TextInput type="number" name="feeAmount" min="0" step="1" />
           </Field>
 
@@ -265,7 +265,7 @@ function Counter({
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-body font-medium">{label}</span>
       <input type="hidden" name={name} value={value} />
       <div className="flex items-center gap-1 rounded-control bg-sunken p-1">
         <StepButton
@@ -275,7 +275,7 @@ function Counter({
         >
           −
         </StepButton>
-        <span className="tabular w-9 text-center text-base font-semibold">{value}</span>
+        <span className="figure w-9 text-center text-body font-semibold">{value}</span>
         <StepButton
           label={`Увеличить: ${label}`}
           onClick={() => onChange(Math.min(max, value + step))}
@@ -305,7 +305,7 @@ function StepButton({
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className="pressable flex size-11 items-center justify-center rounded-chip bg-surface text-lg text-text-secondary shadow-raise disabled:opacity-35 disabled:shadow-none"
+      className="pressable flex size-11 items-center justify-center rounded-chip bg-surface text-title text-text-secondary shadow-raise disabled:opacity-35 disabled:shadow-none"
     >
       {children}
     </button>

@@ -61,9 +61,9 @@ function WriteButton() {
   return (
     <Link
       href="/community/new"
-      className="pressable fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-1/2 z-20 flex min-h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-accent px-5 text-[15px] font-semibold text-accent-ink shadow-float"
+      className="pressable fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-1/2 z-fab flex min-h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-accent px-5 text-body font-semibold text-accent-ink shadow-float"
     >
-      <span aria-hidden className="text-lg leading-none">
+      <span aria-hidden className="text-title leading-none">
         +
       </span>
       Написать

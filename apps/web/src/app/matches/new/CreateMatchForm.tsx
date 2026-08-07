@@ -96,7 +96,7 @@ export function CreateMatchForm({
               <SegmentedOption name="isRated" value="friendly" label="Любительский" />
             </Segmented>
           </Field>
-          <p className="text-xs text-muted">
+          <p className="text-small text-muted">
             Рейтинговый матч меняет уровень участников. Любительский сохранится в истории, но на
             рейтинг не повлияет.
           </p>
@@ -166,7 +166,7 @@ export function CreateMatchForm({
             >
               <div className="flex max-h-64 flex-col gap-2 overflow-y-auto">
                 {players.length === 0 ? (
-                  <p className="text-sm text-muted">
+                  <p className="text-small text-muted">
                     Других игроков пока нет — выберите «не хватает 3».
                   </p>
                 ) : (
@@ -177,11 +177,11 @@ export function CreateMatchForm({
                     return (
                       <label
                         key={player.id}
-                        className={`flex min-h-11 items-center justify-between gap-3 rounded-control border px-3 text-sm transition-colors ${
+                        className={`flex min-h-11 items-center justify-between gap-3 rounded-control border px-3 text-body transition-colors ${
                           selected ? 'border-accent bg-accent-soft' : 'border-border bg-surface'
                         } ${disabled ? 'opacity-45' : 'cursor-pointer'}`}
                       >
-                        <span className="flex min-w-0 items-center gap-2.5">
+                        <span className="flex min-w-0 items-center gap-2">
                           <input
                             type="checkbox"
                             name="invited"

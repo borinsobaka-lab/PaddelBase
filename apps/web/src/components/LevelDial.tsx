@@ -7,10 +7,14 @@ import { formatLevel, levelCategory } from '@paddelbase/rating';
  * верить». Без неё уровень новичка и уровень ветерана выглядят одинаково
  * весомо, а это ровно та ошибка, которую рейтинговая система обязана не
  * допускать.
+ *
+ * В компактном размере буквенная категория не показывается: на 60 px она
+ * нечитаема, а число рядом с ней перестаёт помещаться. Категория живёт в
+ * строке рядом с диском, где её видно.
  */
 const SIZES = {
-  sm: { box: 56, stroke: 4, value: 'text-[17px]', category: 'text-[10px]' },
-  lg: { box: 168, stroke: 8, value: 'text-5xl', category: 'text-sm' },
+  sm: { box: 60, stroke: 4, value: 'text-title', category: null },
+  lg: { box: 168, stroke: 8, value: 'text-hero', category: 'text-body' },
 } as const;
 
 export function LevelDial({
@@ -39,7 +43,13 @@ export function LevelDial({
           stroke="var(--color-border)"
           strokeWidth={stroke}
         />
+        {/* Дуга дорисовывается от нуля к своему значению: уровень буквально
+            набирается. Конечное состояние задано атрибутом, поэтому если
+            анимация не запустится — фоновая вкладка, headless-рендер,
+            prefers-reduced-motion — дуга уже нарисована правильно. */}
         <circle
+          className="draw-arc"
+          style={{ '--arc-length': `${circumference}px` } as React.CSSProperties}
           cx={box / 2}
           cy={box / 2}
           r={radius}
@@ -54,10 +64,12 @@ export function LevelDial({
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`tabular ${value} font-semibold leading-none`}>{formatLevel(level)}</span>
-        <span className={`${category} mt-0.5 font-medium leading-none text-muted`}>
-          {levelCategory(level)}
-        </span>
+        <span className={`figure ${value} font-semibold leading-none`}>{formatLevel(level)}</span>
+        {category ? (
+          <span className={`${category} mt-1 font-medium leading-none text-muted`}>
+            {levelCategory(level)}
+          </span>
+        ) : null}
       </div>
     </div>
   );

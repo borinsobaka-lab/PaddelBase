@@ -125,21 +125,21 @@ export function PostComposer() {
             rows={6}
             maxLength={MAX_TEXT}
             placeholder="Ищем четвёртого в субботу, играем в Ваке…"
-            className="w-full resize-none bg-transparent text-base outline-none placeholder:text-faint"
+            className="w-full resize-none bg-transparent text-body outline-none placeholder:text-faint"
           />
           {/* Счётчик появляется только на подходе к пределу: постоянное
               «0 / 2000» под пустым полем сообщает ровно ничего. */}
           {text.length > MAX_TEXT - 200 ? (
-            <p className="tabular text-right text-xs text-warn">
-              {MAX_TEXT - text.length} символов осталось
+            <p className="text-right text-small text-warn">
+              <span className="figure">{MAX_TEXT - text.length}</span> символов осталось
             </p>
           ) : null}
         </Card>
 
         <Card className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-medium">Вложения</span>
-            <span className="text-xs text-muted">
+            <span className="text-body font-medium">Вложения</span>
+            <span className="text-small text-muted">
               {images} из {MAX_IMAGES} фото · {videos} из {MAX_VIDEOS} видео
             </span>
           </div>
@@ -164,7 +164,7 @@ export function PostComposer() {
                     onClick={() =>
                       setMedia((previous) => previous.filter((entry) => entry.localId !== item.localId))
                     }
-                    className="absolute right-1 top-1 flex size-7 items-center justify-center rounded-full bg-text/70 text-sm text-surface"
+                    className="absolute right-1 top-1 flex size-7 items-center justify-center rounded-full bg-text/70 text-body text-surface"
                   >
                     ×
                   </button>
@@ -195,7 +195,7 @@ export function PostComposer() {
           </Button>
           {uploadError ? <ErrorNote>{uploadError}</ErrorNote> : null}
 
-          <p className="text-xs text-muted">
+          <p className="text-small text-muted">
             Фото ужимаются до 1600 px перед отправкой. Видео — до 100 МБ и двух минут. Фото и видео
             в одном посте смешивать нельзя.
           </p>

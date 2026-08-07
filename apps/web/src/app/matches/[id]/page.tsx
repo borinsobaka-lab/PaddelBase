@@ -64,16 +64,16 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         {/* Тот же порядок, что и в карточке ленты: время ведёт, день идёт
             следом. Игрок узнаёт матч по времени, и переучивать его на
             детальном экране незачем. */}
-        <h1 className="text-[28px] font-semibold leading-tight">
-          <span className="tabular">{formatTime(match.startsAt)}</span>
-          <span className="ml-2.5 text-[19px] font-normal text-text-secondary">
+        <h1 className="text-h1 font-semibold leading-tight">
+          <span className="figure">{formatTime(match.startsAt)}</span>
+          <span className="ml-2 text-h2 font-normal text-text-secondary">
             {formatDay(match.startsAt)}
           </span>
         </h1>
-        <p className="mt-1.5 text-[15px] text-text-secondary">
+        <p className="mt-1 text-body text-text-secondary">
           {match.courtName} · {match.courtCity}
         </p>
-        <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
+        <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-small text-muted">
           <span>{formatDuration(match.durationMin)}</span>
           <Dot />
           <span>{MATCH_STATUS_NAMES[match.status] ?? match.status}</span>
@@ -100,7 +100,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
       {match.comment ? (
         <Card>
-          <p className="whitespace-pre-wrap text-sm">{match.comment}</p>
+          <p className="whitespace-pre-wrap text-body">{match.comment}</p>
         </Card>
       ) : null}
 
@@ -119,12 +119,12 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
             {match.players.map((player) => (
               <li
                 key={player.id}
-                className="flex items-center justify-between gap-3 border-b border-border py-2.5 text-sm last:border-0 last:pb-0 first:pt-0"
+                className="flex items-center justify-between gap-3 border-b border-border py-2 text-body last:border-0 last:pb-0 first:pt-0"
               >
                 <span className="min-w-0 truncate">
                   {player.name}
                   {player.id === match.creatorId ? (
-                    <span className="ml-2 text-xs text-muted">организатор</span>
+                    <span className="ml-2 text-small text-muted">организатор</span>
                   ) : null}
                 </span>
                 <LevelChip level={player.level} />
@@ -133,9 +133,9 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
           </ul>
 
           {match.levelMin !== null && match.levelMax !== null ? (
-            <p className="text-[13px] text-muted">
+            <p className="text-small text-muted">
               Ищут игроков уровня{' '}
-              <span className="tabular">
+              <span className="figure">
                 {formatLevel(match.levelMin)}–{formatLevel(match.levelMax)}
               </span>
             </p>
@@ -162,21 +162,21 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
           <Card>
             {/* Счёт — главное число экрана после времени, поэтому он крупный
                 и табличный: две карточки матчей рядом должны выравниваться. */}
-            <p className="tabular text-3xl font-semibold leading-none">
+            <p className="figure text-display font-semibold leading-none">
               {(result.sets as unknown as { a: number; b: number }[])
                 .map((set) => `${set.a}:${set.b}`)
                 .join('  ')}
             </p>
-            <p className="mt-2 text-sm text-text-secondary">
+            <p className="mt-2 text-small text-text-secondary">
               Победила {result.winnerTeam === 1 ? 'первая' : 'вторая'} пара
             </p>
 
             {result.disputedAt ? (
-              <p className="mt-4 rounded-control bg-warn-soft px-3 py-2 text-sm text-warn">
+              <p className="mt-4 rounded-control bg-warn-soft px-3 py-2 text-small text-warn">
                 Результат оспорен. Рейтинг не изменится до ручного разбора.
               </p>
             ) : result.confirmedAt === null ? (
-              <p className="mt-4 text-[13px] text-muted">
+              <p className="mt-4 text-small text-muted">
                 Ждём подтверждения от соперников. Если за 48 часов никто не ответит, результат
                 засчитается автоматически.
               </p>
@@ -189,10 +189,10 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
                   {ratingChanges.map((change) => (
                     <li
                       key={change.userId}
-                      className="flex items-center justify-between gap-3 border-b border-border py-2 text-sm last:border-0 last:pb-0"
+                      className="flex items-center justify-between gap-3 border-b border-border py-2 text-body last:border-0 last:pb-0"
                     >
                       <span className="min-w-0 truncate">{change.name}</span>
-                      <span className="tabular flex shrink-0 items-center gap-2">
+                      <span className="figure flex shrink-0 items-center gap-2">
                         <span className="text-muted">{formatLevel(change.levelBefore)}</span>
                         <span aria-hidden className="text-faint">
                           →

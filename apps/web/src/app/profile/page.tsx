@@ -32,13 +32,13 @@ export default async function ProfilePage() {
   return (
     <AppShell>
       <main className="flex flex-col gap-6 pt-5">
-        <header className="flex items-center gap-3.5">
-          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-sunken text-xl font-semibold text-text-secondary">
+        <header className="flex items-center gap-4">
+          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-sunken text-h2 font-semibold text-text-secondary">
             {name[0]?.toUpperCase()}
           </span>
           <div className="min-w-0">
-            <h1 className="truncate text-[22px] font-semibold leading-tight">{name}</h1>
-            <p className="text-sm text-muted">{user.city ?? 'Грузия'}</p>
+            <h1 className="truncate text-h2 font-semibold leading-tight">{name}</h1>
+            <p className="text-small text-muted">{user.city ?? 'Грузия'}</p>
           </div>
         </header>
 
@@ -48,15 +48,25 @@ export default async function ProfilePage() {
 
         {/* Цифры ведут, подписи обслуживают. Раньше подпись и значение были
             одного размера, и таблица читалась как список слов. */}
+        {/* Пять одинаковых плиток «крупная цифра, мелкая подпись» — самая
+            узнаваемая заготовка. Здесь их две: сыграно и выиграно, то, что
+            игрок действительно проверяет. Остальное — справка, и её место в
+            строках, а не на пьедестале. */}
         <section className="flex flex-col gap-3">
           <SectionHeader>Статистика</SectionHeader>
-          <Card>
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-5">
+          <Card className="flex flex-col gap-4">
+            <dl className="grid grid-cols-2 gap-4">
               <Stat label="Рейтинговых матчей" value={String(user.ratedMatchesCount)} />
-              <Stat label="Побед" value={`${wins} из ${history.length}`} />
-              <Stat label="Надёжность" value={`${Math.round(reliability * 100)} %`} />
-              <Stat label="Стартовый уровень" value={formatLevel(toNumber(user.startLevel))} />
-              <Stat label="В приложении с" value={user.createdAt.toLocaleDateString('ru-RU')} />
+              {/* «1 из 1» ставило бы русское «из» в моноширинный шрифт. Косая
+                  черта — знак, а не слово, и совпадает с записью счёта в
+                  таблице турнира. */}
+              <Stat label="Побед из сыгранных" value={`${wins} / ${history.length}`} />
+            </dl>
+
+            <dl className="flex flex-col border-t border-border pt-4 text-body">
+              <Fact label="Надёжность" value={`${Math.round(reliability * 100)} %`} />
+              <Fact label="Стартовый уровень" value={formatLevel(toNumber(user.startLevel))} />
+              <Fact label="В приложении с" value={user.createdAt.toLocaleDateString('ru-RU')} />
             </dl>
           </Card>
         </section>
@@ -76,20 +86,20 @@ export default async function ProfilePage() {
                   <li key={entry.matchId} className="border-b border-border last:border-0">
                     <Link
                       href={`/matches/${entry.matchId}`}
-                      className="pressable flex items-center justify-between gap-3 p-3.5"
+                      className="pressable flex items-center justify-between gap-3 p-4"
                     >
                       <span className="min-w-0">
                         <span className="flex items-baseline gap-2">
                           <span
-                            className={`text-[15px] font-semibold ${
+                            className={`text-body font-semibold ${
                               entry.won ? 'text-accent' : 'text-text-secondary'
                             }`}
                           >
                             {entry.won ? 'Победа' : 'Поражение'}
                           </span>
-                          <span className="tabular text-sm">{entry.score}</span>
+                          <span className="figure text-body">{entry.score}</span>
                         </span>
-                        <span className="mt-0.5 block truncate text-xs text-muted">
+                        <span className="mt-0.5 block truncate text-small text-muted">
                           {formatDay(entry.playedAt)} · {entry.courtName}
                           {entry.partnerName ? ` · с ${entry.partnerName}` : ''}
                         </span>
@@ -97,7 +107,7 @@ export default async function ProfilePage() {
 
                       {entry.delta !== null ? (
                         <span
-                          className={`tabular shrink-0 text-sm font-semibold ${
+                          className={`figure shrink-0 text-body font-semibold ${
                             entry.delta >= 0 ? 'text-accent' : 'text-danger'
                           }`}
                         >
@@ -105,7 +115,7 @@ export default async function ProfilePage() {
                           {entry.delta.toFixed(3)}
                         </span>
                       ) : (
-                        <span className="shrink-0 text-xs text-muted">без рейтинга</span>
+                        <span className="shrink-0 text-small text-muted">без рейтинга</span>
                       )}
                     </Link>
                   </li>
@@ -129,7 +139,17 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <dt className="label">{label}</dt>
-      <dd className="tabular mt-1 text-xl font-semibold leading-none">{value}</dd>
+      <dd className="figure mt-1 text-h2 font-semibold leading-none">{value}</dd>
+    </div>
+  );
+}
+
+/** Справочная строка: подпись слева, значение справа, оба одного кегля. */
+function Fact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 border-b border-border py-2 first:pt-0 last:border-0 last:pb-0">
+      <dt className="text-text-secondary">{label}</dt>
+      <dd className="figure shrink-0 font-medium">{value}</dd>
     </div>
   );
 }
@@ -147,7 +167,7 @@ function StartLevelExplanation({ breakdown }: { breakdown: StartLevelResult }) {
       {/* Нативный треугольник маркера мелкий и не даёт цели нажатия; здесь
           вся строка высотой 44 px, а стрелка поворачивается при раскрытии. */}
       <details className="group">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 p-4 text-[15px] font-medium [&::-webkit-details-marker]:hidden">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 p-4 text-body font-medium [&::-webkit-details-marker]:hidden">
           Как посчитан стартовый уровень
           <svg
             width="18"
@@ -166,7 +186,7 @@ function StartLevelExplanation({ breakdown }: { breakdown: StartLevelResult }) {
         </summary>
 
         <div className="border-t border-border p-4">
-          <dl className="flex flex-col gap-2.5 text-sm">
+          <dl className="flex flex-col gap-2 text-body">
             <Row label="Техника: стекло, удары над головой, подача, тактика">
               {breakdown.technicalScore.toFixed(2)}
             </Row>
@@ -182,7 +202,7 @@ function StartLevelExplanation({ breakdown }: { breakdown: StartLevelResult }) {
           </dl>
 
           {breakdown.branch === 'racketSportCrossover' ? (
-            <p className="mt-3 text-xs text-muted">
+            <p className="mt-3 text-small text-muted">
               У вас сильный ракеточный бэкграунд, но мало падел-стажа. Удары, ноги и чтение мяча
               переносятся, а стекло и позиционирование — нет, поэтому старт держится в коридоре
               2.5–3.5 и быстро уточнится по матчам.
@@ -190,13 +210,13 @@ function StartLevelExplanation({ breakdown }: { breakdown: StartLevelResult }) {
           ) : null}
 
           {breakdown.selfAssessmentInflated ? (
-            <p className="mt-3 text-xs text-warn">
+            <p className="mt-3 text-small text-warn">
               Самооценка заметно выше остальных ответов, поэтому она не учитывалась. Если это
               ошибка, уровень всё равно выправится за первые матчи.
             </p>
           ) : null}
 
-          <p className="mt-3 text-xs text-muted">
+          <p className="mt-3 text-small text-muted">
             Техника весит больше биографии: поведенческие вопросы предсказывают уровень точнее, чем
             стаж и самооценка.
           </p>
@@ -210,7 +230,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   return (
     <div className="flex items-baseline justify-between gap-3">
       <dt className="text-text-secondary">{label}</dt>
-      <dd className="tabular shrink-0 font-semibold">{children}</dd>
+      <dd className="figure shrink-0 font-semibold">{children}</dd>
     </div>
   );
 }

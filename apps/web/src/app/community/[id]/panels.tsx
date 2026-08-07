@@ -33,17 +33,17 @@ export function CommentsPanel({
           <ul className="flex flex-col">
             {comments.map((item) => (
               <li key={item.id} className="border-b border-border py-3 first:pt-0 last:border-0 last:pb-0">
-                <p className="flex items-baseline gap-2 text-sm">
+                <p className="flex items-baseline gap-2 text-body">
                   <span className="font-semibold">{item.authorName}</span>
-                  <span className="text-xs text-muted">{formatDateTime(item.createdAt)}</span>
+                  <span className="text-small text-muted">{formatDateTime(item.createdAt)}</span>
                 </p>
-                <p className="mt-1 whitespace-pre-wrap text-[15px] leading-relaxed">{item.text}</p>
+                <p className="mt-1 whitespace-pre-wrap text-body leading-relaxed">{item.text}</p>
               </li>
             ))}
           </ul>
         </Card>
       ) : (
-        <p className="text-sm text-muted">Пока тихо. Ответьте первым.</p>
+        <p className="text-small text-muted">Пока тихо. Ответьте первым.</p>
       )}
 
       <Notice state={state} />
@@ -66,7 +66,7 @@ export function ReportPanel({ postId }: { postId: string }) {
 
   return (
     <details className="pt-2">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center text-sm text-muted [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center text-small text-muted [&::-webkit-details-marker]:hidden">
         Пожаловаться на пост
       </summary>
 
@@ -119,7 +119,7 @@ export function ModerationPanel({
       </div>
 
       {isHidden ? (
-        <p className="text-xs text-warn">Пост скрыт: его видите только вы как администратор.</p>
+        <p className="text-small text-warn">Пост скрыт: его видите только вы как администратор.</p>
       ) : null}
     </Card>
   );

@@ -58,8 +58,8 @@ export default async function HomePage({
 
         {welcome ? (
           <Card tone="accent">
-            <p className="text-sm">
-              Готово, ваш уровень — <span className="tabular font-semibold">{formatLevel(level)}</span>.
+            <p className="text-body">
+              Готово, ваш уровень — <span className="figure font-semibold">{formatLevel(level)}</span>.
               Это стартовая оценка по анкете: первые матчи будут двигать её заметно.
             </p>
           </Card>
@@ -74,7 +74,10 @@ export default async function HomePage({
         {/* Фокус экрана. Секции нет, пока нечему в ней быть — пустой блок
             «ничего не требуется» только разбавлял бы важное. */}
         {needsMe.length > 0 ? (
-          <section className="flex flex-col gap-3">
+          /* Единственная секция с появлением. Она приходит не всегда, и её
+             приход стоит заметить; одинаковый въезд на все секции — это уже
+             не движение, а тик. */
+          <section className="rise-in flex flex-col gap-3">
             <SectionHeader>Требует вас</SectionHeader>
             {needsMe.map((match) => (
               <MatchCard key={match.id} match={match} viewerId={user.id} variant="focus" />
@@ -148,12 +151,12 @@ function Greeting({ firstName, unread }: { firstName: string; unread: number }) 
   return (
     <header className="flex items-center justify-between gap-3">
       <Link href="/profile" className="pressable flex min-h-11 items-center gap-3">
-        <span className="flex size-10 items-center justify-center rounded-full bg-sunken text-[15px] font-semibold text-text-secondary">
+        <span className="flex size-10 items-center justify-center rounded-full bg-sunken text-body font-semibold text-text-secondary">
           {firstName[0]?.toUpperCase()}
         </span>
         <span>
-          <span className="block text-[17px] font-semibold leading-tight">{firstName}</span>
-          <span className="block text-[13px] text-muted">Профиль и история</span>
+          <span className="block text-title font-semibold leading-tight">{firstName}</span>
+          <span className="block text-small text-muted">Профиль и история</span>
         </span>
       </Link>
 
@@ -164,7 +167,7 @@ function Greeting({ firstName, unread }: { firstName: string; unread: number }) 
       >
         <BellIcon />
         {unread > 0 ? (
-          <span className="tabular absolute -right-0.5 -top-0.5 flex min-w-[20px] items-center justify-center rounded-full bg-ball px-1 py-0.5 text-[11px] font-semibold text-ball-ink ring-2 ring-canvas">
+          <span className="figure absolute -right-0.5 -top-0.5 flex min-w-[20px] items-center justify-center rounded-full bg-ball px-1 py-0.5 text-caption font-semibold text-ball-ink ring-2 ring-canvas">
             {unread > 99 ? '99+' : unread}
           </span>
         ) : null}

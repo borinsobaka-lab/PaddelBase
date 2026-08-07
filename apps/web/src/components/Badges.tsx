@@ -16,14 +16,14 @@ export function Badge({
   } as const;
 
   return (
-    <span className={`rounded-chip px-2 py-0.5 text-xs font-medium ${tones[tone]}`}>{children}</span>
+    <span className={`rounded-chip px-2 py-0.5 text-caption font-medium ${tones[tone]}`}>{children}</span>
   );
 }
 
 /** Уровень игрока: цифра и буквенная категория рядом — как в профиле. */
 export function LevelChip({ level }: { level: number }) {
   return (
-    <span className="tabular inline-flex shrink-0 items-center gap-1 rounded-chip bg-sunken px-2 py-0.5 text-xs font-medium">
+    <span className="figure inline-flex shrink-0 items-center gap-1 rounded-chip bg-sunken px-2 py-0.5 text-caption font-medium">
       {formatLevel(level)}
       <span className="text-muted">{levelCategory(level)}</span>
     </span>
@@ -41,7 +41,7 @@ export function PlayerAvatars({ players }: { players: { id: string; name: string
         <span
           key={player.id}
           title={player.name}
-          className="flex size-7 items-center justify-center rounded-full border-2 border-surface bg-sunken text-xs font-medium"
+          className="flex size-7 items-center justify-center rounded-full border-2 border-surface bg-sunken text-caption font-medium"
         >
           {initials(player.name)}
         </span>

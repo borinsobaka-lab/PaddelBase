@@ -15,23 +15,23 @@ export function TournamentCard({ tournament }: { tournament: TournamentCardData 
   return (
     <Link
       href={`/tournaments/${tournament.id}`}
-      className="pressable block rounded-card bg-surface p-3.5 shadow-raise hover:shadow-lift"
+      className="pressable block rounded-card bg-surface p-4 shadow-raise hover:shadow-lift"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-base font-semibold leading-tight">
-            <span className="tabular">{formatTime(tournament.startsAt)}</span>
+          <p className="text-body font-semibold leading-tight">
+            <span className="figure">{formatTime(tournament.startsAt)}</span>
             <span className="ml-2 font-normal text-text-secondary">
               {formatDay(tournament.startsAt)}
             </span>
           </p>
-          <p className="mt-1 truncate text-sm text-muted">
+          <p className="mt-1 truncate text-small text-muted">
             {TOURNAMENT_FORMAT_NAMES[tournament.format]} · {tournament.courtName}
           </p>
         </div>
 
         {tournament.isRated ? null : (
-          <span className="shrink-0 rounded-chip bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-text-secondary">
+          <span className="shrink-0 rounded-chip bg-sunken px-1.5 py-0.5 text-caption font-medium text-text-secondary">
             без рейтинга
           </span>
         )}
@@ -46,15 +46,15 @@ export function TournamentCard({ tournament }: { tournament: TournamentCardData 
         />
       </div>
 
-      <div className="mt-2 flex items-center justify-between gap-3 text-[13px]">
+      <div className="mt-2 flex items-center justify-between gap-3 text-small">
         <span className={free > 0 ? 'font-medium text-text-secondary' : 'text-muted'}>
           {free > 0
             ? `свободно ${free} ${plural(free, 'место', 'места', 'мест')}`
             : 'мест нет'}
         </span>
-        <span className="tabular shrink-0 text-muted">
+        <span className="figure shrink-0 text-muted">
           {tournament.participants} / {tournament.maxParticipants}
-          {tournament.feeAmount ? ` · ${tournament.feeAmount} ₾` : ''}
+          {tournament.feeAmount ? ` · ${tournament.feeAmount} лари` : ''}
         </span>
       </div>
     </Link>

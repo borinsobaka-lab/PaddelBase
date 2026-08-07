@@ -14,16 +14,16 @@ export function CreateButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="pressable fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-1/2 z-20 flex min-h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-accent px-5 text-[15px] font-semibold text-accent-ink shadow-float"
+        className="pressable fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-1/2 z-fab flex min-h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-accent px-5 text-body font-semibold text-accent-ink shadow-float"
       >
-        <span aria-hidden className="text-lg leading-none">
+        <span aria-hidden className="text-title leading-none">
           +
         </span>
         Создать
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-30 flex items-end justify-center bg-text/35 backdrop-blur-[2px]">
+        <div className="fixed inset-0 z-overlay flex items-end justify-center bg-text/35 backdrop-blur-[2px]">
           {/* Клик по затемнению закрывает шторку — это ожидаемое поведение,
               и без него единственный выход остаётся кнопкой «Отмена». */}
           <button
@@ -34,24 +34,24 @@ export function CreateButton() {
           />
 
           <div className="relative mx-auto w-full max-w-[430px] rounded-t-sheet bg-surface p-4 pb-[calc(24px+env(safe-area-inset-bottom))] shadow-float">
-            <p className="pb-3 text-center text-sm text-muted">Что создаём?</p>
+            <p className="pb-3 text-center text-small text-muted">Что создаём?</p>
             <div className="flex flex-col gap-2">
               <Link
                 href="/matches/new"
-                className="pressable flex min-h-12 items-center justify-center rounded-control bg-accent text-[15px] font-semibold text-accent-ink"
+                className="pressable flex min-h-12 items-center justify-center rounded-control bg-accent text-body font-semibold text-accent-ink"
               >
                 Матч 2 × 2
               </Link>
               <Link
                 href="/tournaments/new"
-                className="pressable flex min-h-12 items-center justify-center rounded-control bg-surface text-[15px] font-medium shadow-raise"
+                className="pressable flex min-h-12 items-center justify-center rounded-control bg-surface text-body font-medium shadow-raise"
               >
                 Турнир
               </Link>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="min-h-12 text-sm text-muted"
+                className="min-h-12 text-small text-muted"
               >
                 Отмена
               </button>

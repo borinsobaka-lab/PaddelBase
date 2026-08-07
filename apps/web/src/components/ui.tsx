@@ -43,7 +43,7 @@ export function Button({
 }: ComponentProps<'button'> & { variant?: 'primary' | 'ghost' | 'quiet' }) {
   // Все тапабельные элементы не меньше 44 px по высоте (ТЗ §9).
   const base =
-    'pressable inline-flex min-h-11 w-full items-center justify-center rounded-control px-4 text-[15px] font-medium disabled:pointer-events-none disabled:opacity-45';
+    'pressable inline-flex min-h-11 w-full items-center justify-center rounded-control px-4 text-body font-medium disabled:pointer-events-none disabled:opacity-45';
 
   const styles = {
     primary: 'bg-accent text-accent-ink shadow-raise hover:bg-accent/92',
@@ -65,21 +65,26 @@ export function Field({
 }) {
   return (
     <label className="flex flex-col gap-2">
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-body font-medium">{label}</span>
       {children}
-      {hint ? <span className="text-xs text-muted">{hint}</span> : null}
+      {hint ? <span className="text-small text-muted">{hint}</span> : null}
     </label>
   );
 }
 
 /**
  * Поле ввода утоплено относительно поверхности: более тёмная заливка сама
- * говорит «сюда вводят», и тяжёлая рамка для этого не нужна.
+ * говорит «сюда вводят».
+ *
+ * Но опознаётся поле границей, а не заливкой: sunken к surface — это 1.16 : 1,
+ * чего не хватает никому, включая зрячих на солнце. Поэтому граница здесь
+ * border-strong, держащая 3 : 1, а плейсхолдер — muted, а не faint: подсказка
+ * внутри поля остаётся текстом и обязана читаться на 4.5 : 1.
  */
 export function TextInput(props: ComponentProps<'input'>) {
   return (
     <input
-      className="min-h-11 w-full rounded-control border border-border bg-sunken px-3 text-base outline-none transition-colors placeholder:text-faint focus:border-accent focus:bg-surface"
+      className="min-h-11 w-full rounded-control border border-border-strong bg-sunken px-3 text-body outline-none transition-colors placeholder:text-muted focus:border-accent focus:bg-surface"
       {...props}
     />
   );
@@ -89,7 +94,7 @@ export function TextInput(props: ComponentProps<'input'>) {
 export function Textarea(props: ComponentProps<'textarea'>) {
   return (
     <textarea
-      className="w-full rounded-control border border-border bg-sunken p-3 text-base outline-none transition-colors placeholder:text-faint focus:border-accent focus:bg-surface"
+      className="w-full rounded-control border border-border-strong bg-sunken p-3 text-body outline-none transition-colors placeholder:text-muted focus:border-accent focus:bg-surface"
       {...props}
     />
   );
@@ -107,7 +112,7 @@ export function Select({ className = '', ...props }: ComponentProps<'select'>) {
   return (
     <div className="relative">
       <select
-        className={`min-h-11 w-full appearance-none rounded-control border border-border bg-sunken py-2 pl-3 pr-10 text-base outline-none transition-colors focus:border-accent focus:bg-surface ${className}`}
+        className={`min-h-11 w-full appearance-none rounded-control border border-border-strong bg-sunken py-2 pl-3 pr-10 text-body outline-none transition-colors focus:border-accent focus:bg-surface ${className}`}
         {...props}
       />
       <svg
@@ -155,7 +160,7 @@ export function SegmentedOption({
   return (
     <label
       className={`pressable flex min-h-11 cursor-pointer items-center justify-center rounded-chip px-1 text-center font-medium text-text-secondary transition-colors has-checked:bg-surface has-checked:text-text has-checked:shadow-raise ${
-        compact ? 'text-[13px]' : 'text-sm'
+        compact ? 'text-small' : 'text-body'
       }`}
     >
       <input type="radio" className="sr-only" {...props} />
@@ -175,7 +180,7 @@ export function ChoiceRow({
   ...props
 }: ComponentProps<'input'> & { label: ReactNode }) {
   return (
-    <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-control border border-border bg-surface p-3 text-sm transition-colors has-checked:border-accent has-checked:bg-accent-soft">
+    <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-control border border-border bg-surface p-3 text-body transition-colors has-checked:border-accent has-checked:bg-accent-soft">
       <input
         type={type}
         className="mt-px size-4 shrink-0 accent-[var(--color-accent)]"
@@ -193,7 +198,7 @@ export function CheckRow({
   ...props
 }: ComponentProps<'input'> & { label: ReactNode; hint?: string }) {
   return (
-    <label className="flex min-h-11 cursor-pointer items-center gap-3 py-1.5 text-sm">
+    <label className="flex min-h-11 cursor-pointer items-center gap-3 py-1.5 text-body">
       <input
         type="checkbox"
         className="size-[18px] shrink-0 accent-[var(--color-accent)]"
@@ -201,7 +206,7 @@ export function CheckRow({
       />
       <span className="min-w-0">
         <span className="block leading-snug">{label}</span>
-        {hint ? <span className="mt-0.5 block text-xs text-muted">{hint}</span> : null}
+        {hint ? <span className="mt-0.5 block text-small text-muted">{hint}</span> : null}
       </span>
     </label>
   );
@@ -210,7 +215,7 @@ export function CheckRow({
 /** Сообщение об ошибке говорит, что произошло и что делать (ТЗ §9). */
 export function ErrorNote({ children }: { children: ReactNode }) {
   return (
-    <p role="alert" className="rounded-control bg-danger-soft px-3 py-2 text-sm text-danger">
+    <p role="alert" className="rounded-control bg-danger-soft px-3 py-2 text-body text-danger">
       {children}
     </p>
   );
@@ -219,15 +224,15 @@ export function ErrorNote({ children }: { children: ReactNode }) {
 /** Спокойное подтверждение: действие прошло, ничего делать не нужно. */
 export function InfoNote({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-control bg-accent-soft px-3 py-2 text-sm text-accent">{children}</p>
+    <p className="rounded-control bg-accent-soft px-3 py-2 text-small text-accent">{children}</p>
   );
 }
 
 export function PageTitle({ children, subtitle }: { children: ReactNode; subtitle?: string }) {
   return (
     <header className="pb-5 pt-7">
-      <h1 className="text-[26px] font-semibold leading-tight">{children}</h1>
-      {subtitle ? <p className="mt-1.5 max-w-[42ch] text-sm text-text-secondary">{subtitle}</p> : null}
+      <h1 className="text-h1 font-semibold leading-tight">{children}</h1>
+      {subtitle ? <p className="mt-1 max-w-[42ch] text-small text-text-secondary">{subtitle}</p> : null}
     </header>
   );
 }
@@ -275,10 +280,10 @@ export function BackLink({ href, label = 'Назад' }: { href: string; label?:
  */
 export function StickyBar({ children }: { children: ReactNode }) {
   return (
-    <div className="sticky bottom-0 z-10 -mx-4 mt-1 px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
+    <div className="sticky bottom-0 z-sticky -mx-4 mt-1 px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 top-0 -z-10 bg-linear-to-t from-canvas from-70% to-transparent"
+        className="pointer-events-none absolute inset-x-0 bottom-0 top-0 -z-1 bg-linear-to-t from-canvas from-70% to-transparent"
       />
       {children}
     </div>
@@ -300,7 +305,7 @@ export function SectionHeader({
 }) {
   return (
     <div className="flex min-h-7 items-center justify-between gap-3">
-      <h2 className="text-[17px] font-semibold leading-tight">{children}</h2>
+      <h2 className="text-title font-semibold leading-tight">{children}</h2>
       {action}
     </div>
   );
@@ -315,7 +320,7 @@ export function SectionHeader({
  */
 export function MoreLink({ children }: { children: ReactNode }) {
   return (
-    <span className="-my-3 -mr-2 flex min-h-11 items-center px-2 text-sm font-medium text-accent">
+    <span className="-my-3 -mr-2 flex min-h-11 items-center px-2 text-body font-medium text-accent">
       {children}
     </span>
   );
@@ -348,17 +353,17 @@ export function EmptyState({
 }) {
   if (variant === 'quiet') {
     return (
-      <p className="text-sm text-muted">
+      <p className="text-small text-muted">
         {title}
-        {hint ? <span className="block text-[13px] text-faint">{hint}</span> : null}
+        {hint ? <span className="block text-small text-faint">{hint}</span> : null}
       </p>
     );
   }
 
   return (
     <div className="rounded-card border border-dashed border-border-strong px-4 py-7 text-center">
-      <p className="text-[15px] font-medium">{title}</p>
-      {hint ? <p className="mx-auto mt-1.5 max-w-[34ch] text-sm text-muted">{hint}</p> : null}
+      <p className="text-body font-medium">{title}</p>
+      {hint ? <p className="mx-auto mt-1 max-w-[34ch] text-small text-muted">{hint}</p> : null}
       {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
     </div>
   );

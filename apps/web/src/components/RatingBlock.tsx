@@ -25,10 +25,10 @@ export function RatingBlock({
       <LevelDial level={level} reliability={reliability} size="lg" />
 
       <div className="text-center">
-        <p className="text-[15px] font-medium">
+        <p className="text-body font-medium">
           {unrated ? 'Уровень не подтверждён' : calibrated ? 'Уровень подтверждён' : 'Идёт калибровка'}
         </p>
-        <p className="mx-auto mt-1 max-w-[34ch] text-sm text-muted">
+        <p className="mx-auto mt-1 max-w-[34ch] text-small text-muted">
           {unrated ? (
             'Это оценка по анкете. Она уточнится после первых рейтинговых матчей.'
           ) : calibrated ? (

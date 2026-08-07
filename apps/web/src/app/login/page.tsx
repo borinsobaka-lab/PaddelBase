@@ -22,8 +22,8 @@ export default function LoginPage() {
     <main className="flex min-h-dvh flex-col justify-center gap-8 py-10">
       <header>
         <CourtMark />
-        <h1 className="mt-6 text-[30px] font-semibold leading-none">PaddelBase</h1>
-        <p className="mt-2 max-w-[30ch] text-[15px] text-text-secondary">
+        <h1 className="mt-6 text-h1 font-semibold leading-none">PaddelBase</h1>
+        <p className="mt-2 max-w-[30ch] text-body text-text-secondary">
           Матчи, турниры и честный уровень для игроков в падел в Грузии.
         </p>
       </header>
@@ -47,7 +47,7 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <p className="text-xs text-muted">
+      <p className="text-small text-muted">
         Пока идёт тестирование, вход делается по имени и ничего не защищает: кто угодно может
         представиться кем угодно. Настоящая авторизация появится перед запуском.
       </p>

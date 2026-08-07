@@ -14,7 +14,7 @@ export default function HomeLoading() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-full bg-sunken" />
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="h-4 w-24 rounded-chip bg-sunken" />
               <div className="h-3 w-32 rounded-chip bg-sunken" />
             </div>

@@ -45,10 +45,10 @@ export default async function GamesPage() {
             <section key={day} className="flex flex-col gap-3">
               {/* Заголовок дня прилипает: при прокрутке длинного списка иначе
                   теряется, на какой день смотришь. */}
-              <div className="sticky top-0 z-10 -mx-4 bg-canvas/92 px-4 py-2 backdrop-blur">
+              <div className="sticky top-0 z-sticky -mx-4 bg-canvas/92 px-4 py-2 backdrop-blur">
                 <div className="flex items-baseline justify-between gap-3">
-                  <h2 className="text-[15px] font-semibold">{day}</h2>
-                  <span className="tabular text-[13px] text-muted">{dayMatches.length}</span>
+                  <h2 className="text-body font-semibold">{day}</h2>
+                  <span className="figure text-small text-muted">{dayMatches.length}</span>
                 </div>
               </div>
 

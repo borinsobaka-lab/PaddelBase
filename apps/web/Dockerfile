@@ -29,6 +29,9 @@ RUN addgroup -g 1001 nodejs && adduser -u 1001 -G nodejs -S nextjs
 
 COPY --from=build --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+# public/ standalone-вывод в себя не включает, а там лежат файлы шрифтов.
+# Без этой строки приложение молча откатывается на системный шрифт.
+COPY --from=build --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 # Схема и миграции нужны в рантайме: prisma migrate deploy запускается
 # при выкатке, а не при сборке образа.
 COPY --from=build --chown=nextjs:nodejs /app/packages/db/prisma ./packages/db/prisma

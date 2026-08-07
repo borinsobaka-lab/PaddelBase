@@ -16,8 +16,8 @@ export interface CourtPlayer {
 }
 
 const SIZES = {
-  sm: { court: 'h-12', slot: 'size-6 text-[9px]', gap: 'gap-1', pad: 'p-1.5' },
-  md: { court: 'h-16', slot: 'size-8 text-[11px]', gap: 'gap-1.5', pad: 'p-2' },
+  sm: { court: 'h-12', slot: 'size-6 text-caption', gap: 'gap-1', pad: 'p-1' },
+  md: { court: 'h-16', slot: 'size-8 text-caption', gap: 'gap-1.5', pad: 'p-2' },
 } as const;
 
 export function CourtLineup({

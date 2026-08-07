@@ -14,21 +14,21 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
   const body = (
     <>
       <div className="flex items-center gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sunken text-sm font-semibold text-text-secondary">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sunken text-body font-semibold text-text-secondary">
           {post.authorName[0]?.toUpperCase()}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-body font-semibold">
             {post.authorName}
             {post.authorRole !== 'PLAYER' ? <Badge tone="accent">организатор</Badge> : null}
             {post.isPinned ? <Badge>закреплено</Badge> : null}
           </p>
-          <p className="text-xs text-muted">{formatDateTime(post.createdAt)}</p>
+          <p className="text-small text-muted">{formatDateTime(post.createdAt)}</p>
         </div>
       </div>
 
       {post.text ? (
-        <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed">{post.text}</p>
+        <p className="mt-3 whitespace-pre-wrap text-body leading-relaxed">{post.text}</p>
       ) : null}
 
       {post.media.length > 0 ? (
@@ -49,7 +49,7 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
                 <video src={item.url} controls className="w-full rounded-control" />
               )}
               {index === 3 && post.media.length > 4 ? (
-                <span className="absolute inset-0 flex items-center justify-center rounded-control bg-text/50 text-lg font-medium text-surface">
+                <span className="absolute inset-0 flex items-center justify-center rounded-control bg-text/50 text-title font-medium text-surface">
                   +{post.media.length - 4}
                 </span>
               ) : null}
@@ -70,7 +70,7 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
         body
       )}
 
-      <div className="-mb-1.5 mt-2 flex items-center gap-1 border-t border-border pt-1.5 text-sm">
+      <div className="-mb-1.5 mt-2 flex items-center gap-1 border-t border-border pt-1 text-body">
         <form action={likeAction}>
           <input type="hidden" name="postId" value={post.id} />
           <button
@@ -78,7 +78,7 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
             disabled={liking}
             aria-pressed={post.likedByMe}
             aria-label={`Нравится, отметок: ${post.likes}`}
-            className={`pressable tabular flex min-h-11 items-center gap-1.5 rounded-control px-2 font-medium ${
+            className={`pressable figure flex min-h-11 items-center gap-1.5 rounded-control px-2 font-medium ${
               post.likedByMe ? 'text-accent' : 'text-muted'
             }`}
           >
@@ -90,7 +90,7 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
         <Link
           href={href ?? `/community/${post.id}`}
           aria-label={`Комментарии: ${post.comments}`}
-          className="pressable tabular flex min-h-11 items-center gap-1.5 rounded-control px-2 font-medium text-muted"
+          className="pressable figure flex min-h-11 items-center gap-1.5 rounded-control px-2 font-medium text-muted"
         >
           <CommentIcon />
           {post.comments}

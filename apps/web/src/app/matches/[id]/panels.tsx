@@ -44,7 +44,7 @@ export function JoinPanel({
   if (alreadyApplied && !state.notice) {
     return (
       <Card>
-        <p className="text-sm text-text-secondary">
+        <p className="text-small text-text-secondary">
           Вы откликнулись на эту заявку. Организатор ответит — придёт уведомление.
         </p>
       </Card>
@@ -67,7 +67,7 @@ export function JoinPanel({
       )}
 
       {match.levelMin !== null && match.levelMax !== null ? (
-        <p className="text-center text-xs text-muted">
+        <p className="text-center text-small text-muted">
           Организатор ищет игроков уровня {formatLevel(match.levelMin)}–
           {formatLevel(match.levelMax)}. Откликнуться можно в любом случае.
         </p>
@@ -96,11 +96,17 @@ export function ApplicationsPanel({
         <Notice state={acceptState} />
         <Notice state={rejectState} />
 
-        <ul className="flex flex-col gap-2.5">
+        {/* Строки, а не карточки внутри карточки: вложенная карточка со своей
+            тенью всегда выглядит ошибкой сборки. Разделяет волосяная линия
+            цвета контейнера. */}
+        <ul className="flex flex-col">
           {applications.map((application) => (
-            <li key={application.id} className="rounded-control bg-surface p-3 shadow-raise">
+            <li
+              key={application.id}
+              className="border-b border-ball-ink/12 py-4 first:pt-0 last:border-0 last:pb-0"
+            >
               <div className="flex items-center justify-between gap-3">
-                <span className="min-w-0 truncate text-[15px] font-semibold">
+                <span className="min-w-0 truncate text-body font-semibold">
                   {application.name}
                 </span>
                 <LevelChip level={application.level} />
@@ -108,13 +114,13 @@ export function ApplicationsPanel({
 
               {/* Надёжность показываем рядом с уровнем: у новичка цифра почти
                   ничего не значит, и организатор должен это видеть. */}
-              <p className="mt-1 text-xs text-muted">
+              <p className="mt-1 text-small text-muted">
                 Надёжность {Math.round(application.reliability * 100)} %
                 {application.reliability < 0.6 ? ' · уровень ещё калибруется' : ''}
               </p>
 
               {application.message ? (
-                <p className="mt-2 text-sm text-text-secondary">{application.message}</p>
+                <p className="mt-2 text-small text-text-secondary">{application.message}</p>
               ) : null}
 
               {/* Кнопки по содержимому, а не во всю ширину: три сплошных
@@ -187,9 +193,9 @@ export function ScorePanel({
               {players.map((player) => (
                 <li
                   key={player.id}
-                  className="flex items-center justify-between gap-3 rounded-control bg-surface p-2 pl-3 shadow-raise"
+                  className="flex items-center justify-between gap-3 rounded-control bg-surface/70 p-2 pl-3"
                 >
-                  <span className="min-w-0 truncate text-sm">{player.name}</span>
+                  <span className="min-w-0 truncate text-body">{player.name}</span>
                   <div className="flex shrink-0 gap-1 rounded-chip bg-sunken p-1">
                     {([1, 2] as const).map((team) => (
                       <button
@@ -197,7 +203,7 @@ export function ScorePanel({
                         type="button"
                         aria-pressed={teams[player.id] === team}
                         onClick={() => setTeams((previous) => ({ ...previous, [player.id]: team }))}
-                        className={`pressable min-h-9 rounded-chip px-2.5 text-[13px] font-medium transition-colors ${
+                        className={`pressable min-h-9 rounded-chip px-2 text-small font-medium transition-colors ${
                           teams[player.id] === team
                             ? 'bg-accent text-accent-ink'
                             : 'text-text-secondary'
@@ -212,7 +218,7 @@ export function ScorePanel({
             </ul>
 
             {!teamsValid ? (
-              <p className="mt-2 text-sm text-warn">В каждой паре должно быть по два игрока.</p>
+              <p className="mt-2 text-small text-warn">В каждой паре должно быть по два игрока.</p>
             ) : null}
           </div>
 
@@ -220,15 +226,15 @@ export function ScorePanel({
             <p className="label">Счёт по сетам</p>
             <div className="mt-2 flex flex-col gap-2">
               {[1, 2, 3].map((index) => (
-                <div key={index} className="flex items-center gap-2.5">
-                  <span className="w-14 shrink-0 text-[13px] text-muted">Сет {index}</span>
+                <div key={index} className="flex items-center gap-2">
+                  <span className="w-14 shrink-0 text-small text-muted">Сет {index}</span>
                   <SetInput name={`set${index}a`} />
                   <span aria-hidden className="text-faint">
                     :
                   </span>
                   <SetInput name={`set${index}b`} />
                   {index === 3 ? (
-                    <span className="text-xs text-muted">если играли</span>
+                    <span className="text-small text-muted">если играли</span>
                   ) : null}
                 </div>
               ))}
@@ -255,7 +261,7 @@ function SetInput({ name }: { name: string }) {
       max={7}
       inputMode="numeric"
       placeholder="—"
-      className="tabular min-h-11 w-14 rounded-control border border-border bg-surface text-center text-lg font-semibold outline-none transition-colors placeholder:font-normal placeholder:text-faint focus:border-accent"
+      className="figure min-h-11 w-14 rounded-control border border-border bg-surface text-center text-title font-semibold outline-none transition-colors placeholder:font-normal placeholder:text-faint focus:border-accent"
     />
   );
 }
@@ -274,8 +280,8 @@ export function ConfirmPanel({ matchId }: { matchId: string }) {
   return (
     <Card tone="action" className="flex flex-col gap-3">
       <div>
-        <p className="text-[17px] font-semibold leading-tight">Подтвердите результат</p>
-        <p className="mt-1 text-sm text-text-secondary">
+        <p className="text-title font-semibold leading-tight">Подтвердите результат</p>
+        <p className="mt-1 text-small text-text-secondary">
           Счёт ввели соперники. После подтверждения изменится рейтинг.
         </p>
       </div>
@@ -333,7 +339,7 @@ export function LeavePanel({
         </Button>
       </form>
       {isCreator ? (
-        <p className="text-center text-xs text-muted">
+        <p className="text-center text-small text-muted">
           Создатель не может просто выйти: без него некому принимать отклики и вводить счёт.
         </p>
       ) : null}

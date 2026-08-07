@@ -40,25 +40,25 @@ export function MatchCard({
       href={`/matches/${match.id}`}
       className={`pressable block rounded-card ${
         action ? 'bg-ball-soft' : 'bg-surface'
-      } ${focus ? 'p-4' : 'p-3.5'} shadow-raise hover:shadow-lift`}
+      } ${focus ? 'p-4' : 'p-4'} shadow-raise hover:shadow-lift`}
     >
       {action ? (
-        <p className="mb-2.5 inline-flex items-center gap-1.5 rounded-chip bg-ball px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-ball-ink">
+        <p className="mb-2 inline-flex items-center gap-1.5 rounded-chip bg-ball px-2 py-1 text-caption font-semibold uppercase tracking-wide text-ball-ink">
           {ACTION_LABELS[action]}
         </p>
       ) : null}
 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className={`font-semibold ${focus ? 'text-[19px]' : 'text-base'} leading-tight`}>
-            <span className="tabular">{formatTime(match.startsAt)}</span>
+          <p className={`font-semibold ${focus ? 'text-h2' : 'text-body'} leading-tight`}>
+            <span className="figure">{formatTime(match.startsAt)}</span>
             {showDay ? (
               <span className="ml-2 font-normal text-text-secondary">
                 {formatDay(match.startsAt)}
               </span>
             ) : null}
           </p>
-          <p className="mt-1 truncate text-sm text-muted">
+          <p className="mt-1 truncate text-small text-muted">
             {match.courtName} · {formatDuration(match.durationMin)}
           </p>
         </div>
@@ -68,12 +68,12 @@ export function MatchCard({
             добавляла зелёного в ленту, где акцент должен быть редкостью. */}
         <div className="flex shrink-0 flex-col items-end gap-1 text-right">
           {match.isRated ? null : (
-            <span className="rounded-chip bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-text-secondary">
+            <span className="rounded-chip bg-sunken px-1.5 py-0.5 text-caption font-medium text-text-secondary">
               без рейтинга
             </span>
           )}
           {match.courtBooked ? (
-            <span className="text-[11px] text-muted">корт забронирован</span>
+            <span className="text-caption text-muted">корт забронирован</span>
           ) : null}
         </div>
       </div>
@@ -87,7 +87,7 @@ export function MatchCard({
         />
       </div>
 
-      <div className="mt-2.5 flex items-center justify-between gap-3 text-[13px]">
+      <div className="mt-2 flex items-center justify-between gap-3 text-small">
         {/* Свободные места уже показаны пунктиром на корте, поэтому строка их
             только называет и не берёт акцентный цвет: иначе зелёное «не хватает
             N» стоит на каждой карточке ленты и перестаёт что-либо значить. */}
@@ -98,11 +98,11 @@ export function MatchCard({
         </span>
 
         {match.levelMin !== null && match.levelMax !== null ? (
-          <span className="tabular shrink-0 text-muted">
+          <span className="figure shrink-0 text-muted">
             {formatLevel(match.levelMin)}–{formatLevel(match.levelMax)}
           </span>
         ) : match.averageLevel !== null ? (
-          <span className="tabular shrink-0 text-muted">
+          <span className="figure shrink-0 text-muted">
             ~{formatLevel(match.averageLevel)}
           </span>
         ) : null}

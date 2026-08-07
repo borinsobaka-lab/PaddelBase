@@ -52,9 +52,9 @@ export default async function NotificationsPage() {
             ширину стояла отдельным блоком и весила больше самого списка. */}
         <header className="flex items-end justify-between gap-3 pb-1 pt-3">
           <div>
-            <h1 className="text-[26px] font-semibold leading-tight">Уведомления</h1>
+            <h1 className="text-h1 font-semibold leading-tight">Уведомления</h1>
             {unread > 0 ? (
-              <p className="mt-1 text-sm text-text-secondary">Непрочитанных: {unread}</p>
+              <p className="mt-1 text-small text-text-secondary">Непрочитанных: {unread}</p>
             ) : null}
           </div>
 
@@ -62,7 +62,7 @@ export default async function NotificationsPage() {
             <form action={markAllRead}>
               <button
                 type="submit"
-                className="pressable -mb-2 -mr-2 min-h-11 px-2 text-sm font-medium text-accent"
+                className="pressable -mb-2 -mr-2 min-h-11 px-2 text-body font-medium text-accent"
               >
                 Прочитать всё
               </button>
@@ -83,27 +83,27 @@ export default async function NotificationsPage() {
 
               const content = (
                 <>
-                  <div className="flex items-start gap-2.5">
+                  <div className="flex items-start gap-2">
                     {/* Непрочитанное помечено точкой, а не жирным текстом:
                         жирный уже занят самим заголовком уведомления. */}
                     <span
                       aria-hidden
-                      className={`mt-1.5 size-2 shrink-0 rounded-full ${
+                      className={`mt-1 size-2 shrink-0 rounded-full ${
                         notification.isRead ? 'bg-transparent' : 'bg-accent'
                       }`}
                     />
                     <div className="min-w-0">
                       <p
-                        className={`text-sm leading-snug ${
+                        className={`text-body leading-snug ${
                           notification.isRead ? 'text-text-secondary' : 'font-medium'
                         }`}
                       >
                         {TEXTS[notification.type] ?? notification.type}
                       </p>
                       {detail ? (
-                        <p className="tabular mt-1 text-[15px] font-semibold">{detail}</p>
+                        <p className="figure mt-1 text-body font-semibold">{detail}</p>
                       ) : null}
-                      <p className="mt-1 text-xs text-muted">
+                      <p className="mt-1 text-small text-muted">
                         {formatDateTime(notification.createdAt)}
                       </p>
                     </div>
@@ -116,12 +116,12 @@ export default async function NotificationsPage() {
                   {href ? (
                     <Link
                       href={href}
-                      className="pressable block rounded-card bg-surface p-3.5 shadow-raise"
+                      className="pressable block rounded-card bg-surface p-4 shadow-raise"
                     >
                       {content}
                     </Link>
                   ) : (
-                    <div className="rounded-card bg-surface p-3.5 shadow-raise">{content}</div>
+                    <div className="rounded-card bg-surface p-4 shadow-raise">{content}</div>
                   )}
                 </li>
               );
