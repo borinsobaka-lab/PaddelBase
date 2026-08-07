@@ -2,18 +2,14 @@
 
 import { useActionState } from 'react';
 
-import { Button, Card, ErrorNote } from '@/components/ui';
+import { Button, Card, ErrorNote, InfoNote, SectionHeader, Textarea, TextInput } from '@/components/ui';
 import { formatDateTime } from '@/lib/format';
 
 import { comment, moderate, report, type CommunityActionState } from '../actions';
 
 function Notice({ state }: { state: CommunityActionState }) {
   if (state.error) return <ErrorNote>{state.error}</ErrorNote>;
-  if (state.notice) {
-    return (
-      <p className="rounded-control bg-accent-soft px-3 py-2 text-sm text-accent">{state.notice}</p>
-    );
-  }
+  if (state.notice) return <InfoNote>{state.notice}</InfoNote>;
   return null;
 }
 
@@ -27,75 +23,62 @@ export function CommentsPanel({
   const [state, formAction, pending] = useActionState<CommunityActionState, FormData>(comment, {});
 
   return (
-    <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Комментарии ({comments.length})</h2>
+    <section className="flex flex-col gap-3">
+      <SectionHeader>
+        Комментарии{comments.length > 0 ? ` · ${comments.length}` : ''}
+      </SectionHeader>
 
-      {comments.length === 0 ? (
-        <p className="text-sm text-muted">Пока тихо. Ответьте первым.</p>
+      {comments.length > 0 ? (
+        <Card>
+          <ul className="flex flex-col">
+            {comments.map((item) => (
+              <li key={item.id} className="border-b border-border py-3 first:pt-0 last:border-0 last:pb-0">
+                <p className="flex items-baseline gap-2 text-sm">
+                  <span className="font-semibold">{item.authorName}</span>
+                  <span className="text-xs text-muted">{formatDateTime(item.createdAt)}</span>
+                </p>
+                <p className="mt-1 whitespace-pre-wrap text-[15px] leading-relaxed">{item.text}</p>
+              </li>
+            ))}
+          </ul>
+        </Card>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {comments.map((item) => (
-            <li key={item.id} className="border-t border-border pt-3 first:border-0 first:pt-0">
-              <p className="text-sm font-medium">{item.authorName}</p>
-              <p className="mt-1 whitespace-pre-wrap text-sm">{item.text}</p>
-              <p className="mt-1 text-xs text-muted">{formatDateTime(item.createdAt)}</p>
-            </li>
-          ))}
-        </ul>
+        <p className="text-sm text-muted">Пока тихо. Ответьте первым.</p>
       )}
 
       <Notice state={state} />
 
       <form action={formAction} className="flex flex-col gap-2">
         <input type="hidden" name="postId" value={postId} />
-        <textarea
-          name="text"
-          rows={3}
-          maxLength={1000}
-          required
-          placeholder="Написать комментарий"
-          className="w-full rounded-control border border-border-strong bg-surface p-3 text-base outline-none focus:border-accent"
-        />
+        <Textarea name="text" rows={3} maxLength={1000} required placeholder="Написать комментарий" />
         <Button type="submit" disabled={pending}>
           {pending ? 'Отправляем…' : 'Отправить'}
         </Button>
       </form>
-    </Card>
+    </section>
   );
 }
 
 export function ReportPanel({ postId }: { postId: string }) {
   const [state, formAction, pending] = useActionState<CommunityActionState, FormData>(report, {});
 
-  if (state.notice) {
-    return (
-      <Card>
-        <p className="text-sm text-accent">{state.notice}</p>
-      </Card>
-    );
-  }
+  if (state.notice) return <InfoNote>{state.notice}</InfoNote>;
 
   return (
-    <Card>
-      <details>
-        <summary className="cursor-pointer text-sm text-muted">Пожаловаться на пост</summary>
+    <details className="pt-2">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center text-sm text-muted [&::-webkit-details-marker]:hidden">
+        Пожаловаться на пост
+      </summary>
 
-        <form action={formAction} className="mt-3 flex flex-col gap-2">
-          <input type="hidden" name="postId" value={postId} />
-          <input
-            type="text"
-            name="reason"
-            maxLength={200}
-            placeholder="Что не так с постом"
-            className="min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-base"
-          />
-          <Notice state={state} />
-          <Button type="submit" variant="ghost" disabled={pending}>
-            {pending ? 'Отправляем…' : 'Отправить жалобу'}
-          </Button>
-        </form>
-      </details>
-    </Card>
+      <form action={formAction} className="mt-2 flex flex-col gap-2">
+        <input type="hidden" name="postId" value={postId} />
+        <TextInput type="text" name="reason" maxLength={200} placeholder="Что не так с постом" />
+        <Notice state={state} />
+        <Button type="submit" variant="ghost" disabled={pending}>
+          {pending ? 'Отправляем…' : 'Отправить жалобу'}
+        </Button>
+      </form>
+    </details>
   );
 }
 
@@ -111,8 +94,8 @@ export function ModerationPanel({
   const [state, formAction, pending] = useActionState<CommunityActionState, FormData>(moderate, {});
 
   return (
-    <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Модерация</h2>
+    <Card tone="warn" className="flex flex-col gap-3">
+      <p className="label">Модерация</p>
       <Notice state={state} />
 
       <div className="grid grid-cols-2 gap-2">

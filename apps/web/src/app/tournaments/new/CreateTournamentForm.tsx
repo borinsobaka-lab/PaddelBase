@@ -1,9 +1,22 @@
 'use client';
 
-import Link from 'next/link';
 import { useActionState, useState } from 'react';
 
-import { Button, Card, ErrorNote, Field, PageTitle, TextInput } from '@/components/ui';
+import {
+  BackLink,
+  Button,
+  Card,
+  ChoiceRow,
+  ErrorNote,
+  Field,
+  PageTitle,
+  Segmented,
+  SegmentedOption,
+  Select,
+  StickyBar,
+  Textarea,
+  TextInput,
+} from '@/components/ui';
 
 import { createTournamentAction, type CreateTournamentState } from './actions';
 
@@ -58,12 +71,8 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
   const restingPerRound = participants - playersPerRound;
 
   return (
-    <main className="pb-24">
-      <div className="flex items-center gap-3 pt-6">
-        <Link href="/games" className="text-sm text-muted">
-          ← Назад
-        </Link>
-      </div>
+    <main className="pb-4">
+      <BackLink href="/games" />
 
       <PageTitle subtitle="Сетка соберётся автоматически, вам останется вводить счёт по кортам">
         Новый турнир
@@ -71,19 +80,11 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
 
       <form action={formAction} className="flex flex-col gap-5">
         <Card className="flex flex-col gap-3">
-          <p className="text-sm font-medium">Формат</p>
-          {FORMATS.map((option) => (
-            <label
-              key={option.value}
-              className={`flex cursor-pointer flex-col gap-1 rounded-control border p-3 ${
-                format === option.value
-                  ? 'border-accent bg-accent-soft'
-                  : 'border-border bg-surface hover:border-border-strong'
-              }`}
-            >
-              <span className="flex items-center gap-2 text-sm font-medium">
-                <input
-                  type="radio"
+          <Field label="Формат">
+            <div className="flex flex-col gap-2">
+              {FORMATS.map((option) => (
+                <ChoiceRow
+                  key={option.value}
                   name="format"
                   value={option.value}
                   checked={format === option.value}
@@ -91,21 +92,22 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
                     setFormat(option.value);
                     setParticipants(option.value.startsWith('TEAM_') ? 6 : 8);
                   }}
-                  className="size-4 accent-[var(--color-accent)]"
+                  label={
+                    <>
+                      <span className="block font-medium leading-snug">{option.title}</span>
+                      <span className="mt-0.5 block text-xs text-muted">{option.description}</span>
+                    </>
+                  }
                 />
-                {option.title}
-              </span>
-              <span className="pl-6 text-xs text-muted">{option.description}</span>
-            </label>
-          ))}
-        </Card>
-
-        <Card>
-          <Field label="Тип">
-            <div className="grid grid-cols-2 gap-2">
-              <Choice name="isRated" value="rated" label="Рейтинговый" defaultChecked />
-              <Choice name="isRated" value="friendly" label="Любительский" />
+              ))}
             </div>
+          </Field>
+
+          <Field label="Тип">
+            <Segmented>
+              <SegmentedOption name="isRated" value="rated" defaultChecked label="Рейтинговый" />
+              <SegmentedOption name="isRated" value="friendly" label="Любительский" />
+            </Segmented>
           </Field>
         </Card>
 
@@ -119,32 +121,24 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
             </Field>
           </div>
 
-          <Field label="Продолжительность, часов">
-            <select
-              name="durationMin"
-              defaultValue="180"
-              className="min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-base"
-            >
+          <Field label="Продолжительность">
+            <Select name="durationMin" defaultValue="180">
               {[90, 120, 180, 240, 300].map((minutes) => (
                 <option key={minutes} value={minutes}>
-                  {minutes / 60}
+                  {minutes / 60} ч
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
 
           <Field label="Корт">
-            <select
-              name="courtId"
-              required
-              className="min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-base"
-            >
+            <Select name="courtId" required>
               {courts.map((court) => (
                 <option key={court.id} value={court.id}>
                   {court.name} · {court.city}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
         </Card>
 
@@ -207,9 +201,9 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
 
         <Card className="flex flex-col gap-4">
           <Field label="Очков в раунде">
-            <div className="grid grid-cols-4 gap-2">
+            <Segmented columns={4}>
               {POINTS.map((value) => (
-                <Choice
+                <SegmentedOption
                   key={value}
                   name="pointsPerRound"
                   value={String(value)}
@@ -217,22 +211,18 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
                   defaultChecked={value === 24}
                 />
               ))}
-            </div>
+            </Segmented>
           </Field>
 
           <Field
             label="Компенсация отдыхающим"
             hint="Доля очков раунда, которую получает пропустивший. Не влияет на рейтинг."
           >
-            <select
-              name="restCompensation"
-              defaultValue="0.5"
-              className="min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-base"
-            >
+            <Select name="restCompensation" defaultValue="0.5">
               <option value="0">Без компенсации</option>
               <option value="0.5">Половина очков раунда</option>
               <option value="1">Полный номинал</option>
-            </select>
+            </Select>
           </Field>
 
           <Field label="Взнос, ₾" hint="Необязательно">
@@ -240,50 +230,19 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
           </Field>
 
           <Field label="Описание">
-            <textarea
-              name="description"
-              rows={3}
-              maxLength={1000}
-              className="w-full rounded-control border border-border-strong bg-surface p-3 text-base outline-none focus:border-accent"
-            />
+            <Textarea name="description" rows={3} maxLength={1000} />
           </Field>
         </Card>
 
         {state.error ? <ErrorNote>{state.error}</ErrorNote> : null}
 
-        <div className="sticky bottom-0 -mx-4 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur">
+        <StickyBar>
           <Button type="submit" disabled={pending}>
             {pending ? 'Создаём…' : 'Создать турнир'}
           </Button>
-        </div>
+        </StickyBar>
       </form>
     </main>
-  );
-}
-
-function Choice({
-  name,
-  value,
-  label,
-  defaultChecked,
-}: {
-  name: string;
-  value: string;
-  label: string;
-  defaultChecked?: boolean;
-}) {
-  return (
-    <label className="flex min-h-11 cursor-pointer items-center justify-center rounded-control border border-border bg-surface text-sm font-medium has-checked:border-accent has-checked:bg-accent-soft has-checked:text-accent">
-      <input
-        type="radio"
-        name={name}
-        value={value}
-        defaultChecked={defaultChecked}
-        required
-        className="sr-only"
-      />
-      {label}
-    </label>
   );
 }
 
@@ -308,12 +267,20 @@ function Counter({
     <div className="flex items-center justify-between gap-3">
       <span className="text-sm font-medium">{label}</span>
       <input type="hidden" name={name} value={value} />
-      <div className="flex items-center gap-2">
-        <StepButton label={`Уменьшить ${label}`} onClick={() => onChange(Math.max(min, value - step))} disabled={value <= min}>
+      <div className="flex items-center gap-1 rounded-control bg-sunken p-1">
+        <StepButton
+          label={`Уменьшить: ${label}`}
+          onClick={() => onChange(Math.max(min, value - step))}
+          disabled={value <= min}
+        >
           −
         </StepButton>
-        <span className="tabular w-10 text-center text-base font-medium">{value}</span>
-        <StepButton label={`Увеличить ${label}`} onClick={() => onChange(Math.min(max, value + step))} disabled={value >= max}>
+        <span className="tabular w-9 text-center text-base font-semibold">{value}</span>
+        <StepButton
+          label={`Увеличить: ${label}`}
+          onClick={() => onChange(Math.min(max, value + step))}
+          disabled={value >= max}
+        >
           +
         </StepButton>
       </div>
@@ -338,7 +305,7 @@ function StepButton({
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className="flex size-11 items-center justify-center rounded-control border border-border-strong bg-surface text-lg disabled:opacity-40"
+      className="pressable flex size-11 items-center justify-center rounded-chip bg-surface text-lg text-text-secondary shadow-raise disabled:opacity-35 disabled:shadow-none"
     >
       {children}
     </button>

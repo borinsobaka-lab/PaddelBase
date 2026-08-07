@@ -1,11 +1,24 @@
 'use client';
 
 import { formatLevel } from '@paddelbase/rating';
-import Link from 'next/link';
 import { useActionState, useState } from 'react';
 
 import { LevelChip } from '@/components/Badges';
-import { Button, Card, ErrorNote, Field, PageTitle, TextInput } from '@/components/ui';
+import {
+  BackLink,
+  Button,
+  Card,
+  CheckRow,
+  ErrorNote,
+  Field,
+  PageTitle,
+  Segmented,
+  SegmentedOption,
+  Select,
+  StickyBar,
+  Textarea,
+  TextInput,
+} from '@/components/ui';
 
 import { createMatchAction, type CreateMatchState } from './actions';
 
@@ -22,12 +35,20 @@ interface Player {
 }
 
 const DURATIONS = [
-  { value: 60, label: '1 час' },
-  { value: 90, label: '1,5 часа' },
-  { value: 120, label: '2 часа' },
-  { value: 180, label: '3 часа' },
+  { value: 60, label: '1 ч' },
+  { value: 90, label: '1,5 ч' },
+  { value: 120, label: '2 ч' },
+  { value: 180, label: '3 ч' },
 ] as const;
 
+/**
+ * Создание матча.
+ *
+ * Форма длинная, и раньше все пять карточек весили одинаково: тип матча
+ * выглядел так же важно, как галочка «корт забронирован». Здесь у каждой
+ * группы есть подпись, а сама группа отвечает на один вопрос — когда, где,
+ * с кем, для кого.
+ */
 export function CreateMatchForm({
   courts,
   players,
@@ -60,26 +81,22 @@ export function CreateMatchForm({
   }
 
   return (
-    <main className="pb-24">
-      <div className="flex items-center gap-3 pt-6">
-        <Link href="/home" className="text-sm text-muted">
-          ← Назад
-        </Link>
-      </div>
+    <main className="pb-4">
+      <BackLink href="/home" />
 
       <PageTitle subtitle="Заявка появится в общей ленте, и на неё смогут откликнуться другие игроки">
         Новый матч
       </PageTitle>
 
       <form action={formAction} className="flex flex-col gap-5">
-        <Card>
+        <Card className="flex flex-col gap-3">
           <Field label="Тип матча">
-            <div className="grid grid-cols-2 gap-2">
-              <Radio name="isRated" value="rated" defaultChecked label="Рейтинговый" />
-              <Radio name="isRated" value="friendly" label="Любительский" />
-            </div>
+            <Segmented>
+              <SegmentedOption name="isRated" value="rated" defaultChecked label="Рейтинговый" />
+              <SegmentedOption name="isRated" value="friendly" label="Любительский" />
+            </Segmented>
           </Field>
-          <p className="mt-2 text-xs text-muted">
+          <p className="text-xs text-muted">
             Рейтинговый матч меняет уровень участников. Любительский сохранится в истории, но на
             рейтинг не повлияет.
           </p>
@@ -96,9 +113,9 @@ export function CreateMatchForm({
           </div>
 
           <Field label="Продолжительность">
-            <div className="grid grid-cols-4 gap-2">
+            <Segmented columns={4}>
               {DURATIONS.map((duration) => (
-                <Radio
+                <SegmentedOption
                   key={duration.value}
                   name="durationMin"
                   value={String(duration.value)}
@@ -107,58 +124,39 @@ export function CreateMatchForm({
                   compact
                 />
               ))}
-            </div>
+            </Segmented>
           </Field>
-        </Card>
 
-        <Card className="flex flex-col gap-4">
           <Field label="Корт">
-            <select
-              name="courtId"
-              required
-              className="min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-base"
-            >
+            <Select name="courtId" required>
               {courts.map((court) => (
                 <option key={court.id} value={court.id}>
                   {court.name} · {court.city}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
 
-          <label className="flex min-h-11 items-center gap-3 text-sm">
-            <input type="checkbox" name="courtBooked" className="size-4 accent-[var(--color-accent)]" />
-            Корт уже забронирован
-          </label>
+          <CheckRow name="courtBooked" label="Корт уже забронирован" />
         </Card>
 
         <Card className="flex flex-col gap-4">
           <Field label="Сколько игроков не хватает">
-            <div className="grid grid-cols-3 gap-2">
+            <Segmented columns={3}>
               {[1, 2, 3].map((count) => (
-                <label
+                <SegmentedOption
                   key={count}
-                  className={`flex min-h-11 cursor-pointer items-center justify-center rounded-control border text-sm font-medium ${
-                    slotsMissing === count
-                      ? 'border-accent bg-accent-soft text-accent'
-                      : 'border-border bg-surface'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="slotsMissing"
-                    value={count}
-                    checked={slotsMissing === count}
-                    onChange={() => {
-                      setSlotsMissing(count);
-                      setInvited([]);
-                    }}
-                    className="sr-only"
-                  />
-                  {count}
-                </label>
+                  name="slotsMissing"
+                  value={String(count)}
+                  label={String(count)}
+                  checked={slotsMissing === count}
+                  onChange={() => {
+                    setSlotsMissing(count);
+                    setInvited([]);
+                  }}
+                />
               ))}
-            </div>
+            </Segmented>
           </Field>
 
           {invitesNeeded > 0 ? (
@@ -179,11 +177,11 @@ export function CreateMatchForm({
                     return (
                       <label
                         key={player.id}
-                        className={`flex min-h-11 items-center justify-between gap-3 rounded-control border px-3 text-sm ${
+                        className={`flex min-h-11 items-center justify-between gap-3 rounded-control border px-3 text-sm transition-colors ${
                           selected ? 'border-accent bg-accent-soft' : 'border-border bg-surface'
-                        } ${disabled ? 'opacity-50' : 'cursor-pointer'}`}
+                        } ${disabled ? 'opacity-45' : 'cursor-pointer'}`}
                       >
-                        <span className="flex items-center gap-2">
+                        <span className="flex min-w-0 items-center gap-2.5">
                           <input
                             type="checkbox"
                             name="invited"
@@ -191,9 +189,9 @@ export function CreateMatchForm({
                             checked={selected}
                             disabled={disabled}
                             onChange={() => toggleInvited(player.id)}
-                            className="size-4 accent-[var(--color-accent)]"
+                            className="size-[18px] shrink-0 accent-[var(--color-accent)]"
                           />
-                          {player.name}
+                          <span className="truncate">{player.name}</span>
                         </span>
                         <LevelChip level={player.level} />
                       </label>
@@ -205,16 +203,13 @@ export function CreateMatchForm({
           ) : null}
         </Card>
 
-        <Card className="flex flex-col gap-4">
-          <label className="flex min-h-11 items-center gap-3 text-sm">
-            <input
-              type="checkbox"
-              checked={restrictLevel}
-              onChange={(event) => setRestrictLevel(event.target.checked)}
-              className="size-4 accent-[var(--color-accent)]"
-            />
-            Указать желаемый уровень соперников
-          </label>
+        <Card className="flex flex-col gap-3">
+          <CheckRow
+            checked={restrictLevel}
+            onChange={(event) => setRestrictLevel(event.target.checked)}
+            label="Указать желаемый уровень соперников"
+            hint={`Ваш уровень — ${formatLevel(myLevel)}. Игроков вне диапазона предупредим, но откликнуться не запретим.`}
+          />
 
           {restrictLevel ? (
             <div className="grid grid-cols-2 gap-3">
@@ -240,25 +235,17 @@ export function CreateMatchForm({
               </Field>
             </div>
           ) : null}
+        </Card>
 
-          <p className="text-xs text-muted">
-            Ваш уровень — {formatLevel(myLevel)}. Игроков вне диапазона мы предупредим, но
-            откликнуться не запретим.
-          </p>
-
+        <Card>
           <Field label="Комментарий" hint="Например, про парковку или про то, что нужен свой мяч">
-            <textarea
-              name="comment"
-              maxLength={500}
-              rows={3}
-              className="w-full rounded-control border border-border-strong bg-surface p-3 text-base outline-none focus:border-accent"
-            />
+            <Textarea name="comment" maxLength={500} rows={3} />
           </Field>
         </Card>
 
         {state.error ? <ErrorNote>{state.error}</ErrorNote> : null}
 
-        <div className="sticky bottom-0 -mx-4 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur">
+        <StickyBar>
           <Button
             type="submit"
             variant={invitesReady ? 'primary' : 'ghost'}
@@ -270,40 +257,8 @@ export function CreateMatchForm({
                 ? 'Разместить заявку'
                 : `Выберите ещё ${invitesNeeded - invited.length}`}
           </Button>
-        </div>
+        </StickyBar>
       </form>
     </main>
-  );
-}
-
-function Radio({
-  name,
-  value,
-  label,
-  defaultChecked,
-  compact = false,
-}: {
-  name: string;
-  value: string;
-  label: string;
-  defaultChecked?: boolean;
-  compact?: boolean;
-}) {
-  return (
-    <label
-      className={`flex min-h-11 cursor-pointer items-center justify-center rounded-control border border-border bg-surface text-center font-medium has-checked:border-accent has-checked:bg-accent-soft has-checked:text-accent ${
-        compact ? 'px-1 text-xs' : 'text-sm'
-      }`}
-    >
-      <input
-        type="radio"
-        name={name}
-        value={value}
-        defaultChecked={defaultChecked}
-        required
-        className="sr-only"
-      />
-      {label}
-    </label>
   );
 }

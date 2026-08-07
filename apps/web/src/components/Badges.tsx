@@ -10,20 +10,20 @@ export function Badge({
   tone?: 'neutral' | 'accent' | 'warn';
 }) {
   const tones = {
-    neutral: 'bg-surface-raised text-muted',
+    neutral: 'bg-sunken text-text-secondary',
     accent: 'bg-accent-soft text-accent',
     warn: 'bg-warn-soft text-warn',
   } as const;
 
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tones[tone]}`}>{children}</span>
+    <span className={`rounded-chip px-2 py-0.5 text-xs font-medium ${tones[tone]}`}>{children}</span>
   );
 }
 
 /** Уровень игрока: цифра и буквенная категория рядом — как в профиле. */
 export function LevelChip({ level }: { level: number }) {
   return (
-    <span className="tabular inline-flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-xs font-medium">
+    <span className="tabular inline-flex shrink-0 items-center gap-1 rounded-chip bg-sunken px-2 py-0.5 text-xs font-medium">
       {formatLevel(level)}
       <span className="text-muted">{levelCategory(level)}</span>
     </span>
@@ -41,7 +41,7 @@ export function PlayerAvatars({ players }: { players: { id: string; name: string
         <span
           key={player.id}
           title={player.name}
-          className="flex size-7 items-center justify-center rounded-full border-2 border-surface bg-surface-raised text-xs font-medium"
+          className="flex size-7 items-center justify-center rounded-full border-2 border-surface bg-sunken text-xs font-medium"
         >
           {initials(player.name)}
         </span>

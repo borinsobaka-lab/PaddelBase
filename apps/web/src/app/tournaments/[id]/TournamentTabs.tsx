@@ -10,7 +10,16 @@ import { formatLevel } from '@paddelbase/rating';
 import { useActionState, useState } from 'react';
 
 import { Badge, LevelChip } from '@/components/Badges';
-import { Button, Card, ErrorNote } from '@/components/ui';
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorNote,
+  InfoNote,
+  SectionHeader,
+  Select,
+  TextInput,
+} from '@/components/ui';
 import { TOURNAMENT_FORMAT_NAMES, formatDateTime, formatDuration } from '@/lib/format';
 
 import {
@@ -45,11 +54,7 @@ export interface TournamentViewProps {
 
 function Notice({ state }: { state: TournamentActionState }) {
   if (state.error) return <ErrorNote>{state.error}</ErrorNote>;
-  if (state.notice) {
-    return (
-      <p className="rounded-control bg-accent-soft px-3 py-2 text-sm text-accent">{state.notice}</p>
-    );
-  }
+  if (state.notice) return <InfoNote>{state.notice}</InfoNote>;
   return null;
 }
 
@@ -67,20 +72,22 @@ export function TournamentTabs(props: TournamentViewProps) {
 
   return (
     <>
-      <nav className="flex gap-1 rounded-control bg-surface-raised p-1">
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setTab(item.id)}
-            aria-current={tab === item.id ? 'true' : undefined}
-            className={`min-h-10 flex-1 rounded-[6px] text-sm font-medium transition-colors ${
-              tab === item.id ? 'bg-surface text-text shadow-sm' : 'text-muted'
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
+      <nav className="sticky top-0 z-10 -mx-4 bg-canvas/92 px-4 py-2 backdrop-blur">
+        <div className="flex gap-1 rounded-control bg-sunken p-1">
+          {TABS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTab(item.id)}
+              aria-current={tab === item.id ? 'true' : undefined}
+              className={`pressable min-h-11 flex-1 rounded-chip text-sm font-medium transition-colors ${
+                tab === item.id ? 'bg-surface text-text shadow-raise' : 'text-text-secondary'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </nav>
 
       {tab === 'info' ? <InfoTab {...props} /> : null}
@@ -128,21 +135,21 @@ function InfoTab({ tournament, participants, viewerId }: TournamentViewProps) {
         </dl>
 
         {tournament.description ? (
-          <p className="mt-3 rounded-control bg-surface-raised p-3 text-sm">
+          <p className="mt-4 whitespace-pre-wrap border-t border-border pt-4 text-sm">
             {tournament.description}
           </p>
         ) : null}
       </Card>
 
       {registrationOpen && !tournament.isTeam ? (
-        <Card className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <Notice state={joinState} />
           <Notice state={leaveState} />
 
           {isParticipant ? (
             <form action={leaveActionFn}>
               <input type="hidden" name="tournamentId" value={tournament.id} />
-              <Button type="submit" variant="ghost" disabled={leaving}>
+              <Button type="submit" variant="quiet" disabled={leaving}>
                 Сняться с турнира
               </Button>
             </form>
@@ -154,21 +161,19 @@ function InfoTab({ tournament, participants, viewerId }: TournamentViewProps) {
               </Button>
             </form>
           )}
-        </Card>
+        </div>
       ) : null}
 
       {registrationOpen && tournament.isTeam && !isParticipant ? (
-        <Card>
-          <p className="text-sm text-muted">
-            В командный турнир записываются парой. Форма заявки — на вкладке «Участники».
-          </p>
-        </Card>
+        <p className="text-sm text-text-secondary">
+          В командный турнир записываются парой. Форма заявки — на вкладке «Участники».
+        </p>
       ) : null}
 
       {isOrganizer && (tournament.status === 'REGISTRATION' || tournament.status === 'READY') ? (
-        <Card className="flex flex-col gap-3">
+        <Card tone="action" className="flex flex-col gap-3">
           <Notice state={startState} />
-          <p className="text-sm text-muted">
+          <p className="text-sm text-text-secondary">
             После старта состав закрывается, а уровни участников фиксируются: весь турнир считается
             от них, а не от уровней, меняющихся по ходу.
           </p>
@@ -209,8 +214,8 @@ function ParticipantsTab({ tournament, participants, viewerId, candidates }: Tou
     <div className="flex flex-col gap-4">
       {canRegisterTeam ? (
         <Card className="flex flex-col gap-3">
-          <h2 className="font-medium">Заявить команду</h2>
-          <p className="text-sm text-muted">
+          <p className="text-[17px] font-semibold leading-tight">Заявить команду</p>
+          <p className="text-sm text-text-secondary">
             В командном турнире регистрируется пара целиком: выберите партнёра, с которым будете
             играть весь турнир.
           </p>
@@ -218,24 +223,19 @@ function ParticipantsTab({ tournament, participants, viewerId, candidates }: Tou
 
           <form action={formAction} className="flex flex-col gap-3">
             <input type="hidden" name="tournamentId" value={tournament.id} />
-            <select
-              name="partnerId"
-              required
-              className="min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-base"
-            >
+            <Select name="partnerId" required defaultValue="">
               <option value="">Выберите партнёра</option>
               {candidates.map((candidate) => (
                 <option key={candidate.id} value={candidate.id}>
                   {candidate.name} · {formatLevel(candidate.level)}
                 </option>
               ))}
-            </select>
-            <input
+            </Select>
+            <TextInput
               type="text"
               name="teamName"
               maxLength={40}
               placeholder="Название команды (необязательно)"
-              className="min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-base"
             />
             <Button type="submit" disabled={pending}>
               {pending ? 'Заявляем…' : 'Заявить команду'}
@@ -244,47 +244,58 @@ function ParticipantsTab({ tournament, participants, viewerId, candidates }: Tou
         </Card>
       ) : null}
 
-      <Card>
-        <h2 className="font-medium">
-          {tournament.isTeam ? `Команды (${teams.size})` : `Участники (${participants.length})`}
-        </h2>
+      <section className="flex flex-col gap-3">
+        <SectionHeader>
+          {tournament.isTeam ? `Команды · ${teams.size}` : `Участники · ${participants.length}`}
+        </SectionHeader>
 
         {participants.length === 0 ? (
-          <p className="mt-2 text-sm text-muted">Пока никто не записался.</p>
+          <EmptyState
+            title="Пока никто не записался"
+            hint="Поделитесь ссылкой на турнир — записаться можно с этого экрана."
+          />
         ) : tournament.isTeam ? (
-          <ul className="mt-3 flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
             {[...teams.entries()].map(([teamId, members]) => (
-              <li key={teamId} className="rounded-control border border-border p-3 text-sm">
-                <p className="font-medium">
+              <Card key={teamId}>
+                <p className="text-[15px] font-semibold">
                   {members[0]?.teamName ?? members.map((m) => m.name.split(' ')[0]).join(' и ')}
                 </p>
-                <ul className="mt-1 flex flex-col gap-1 text-muted">
+                <ul className="mt-2 flex flex-col">
                   {members.map((member) => (
-                    <li key={member.userId} className="flex items-center justify-between gap-3">
-                      {member.name}
+                    <li
+                      key={member.userId}
+                      className="flex items-center justify-between gap-3 border-b border-border py-2 text-sm last:border-0 last:pb-0"
+                    >
+                      <span className="min-w-0 truncate text-text-secondary">{member.name}</span>
                       <LevelChip level={member.level} />
                     </li>
                   ))}
                 </ul>
-              </li>
+              </Card>
             ))}
-          </ul>
+          </div>
         ) : (
-          <ul className="mt-3 flex flex-col gap-2">
-            {participants.map((person) => (
-              <li key={person.userId} className="flex items-center justify-between gap-3 text-sm">
-                <span>
-                  {person.name}
-                  {person.reliability < 0.6 ? (
-                    <span className="ml-2 text-xs text-muted">калибруется</span>
-                  ) : null}
-                </span>
-                <LevelChip level={person.level} />
-              </li>
-            ))}
-          </ul>
+          <Card>
+            <ul className="flex flex-col">
+              {participants.map((person) => (
+                <li
+                  key={person.userId}
+                  className="flex items-center justify-between gap-3 border-b border-border py-2.5 text-sm first:pt-0 last:border-0 last:pb-0"
+                >
+                  <span className="min-w-0 truncate">
+                    {person.name}
+                    {person.reliability < 0.6 ? (
+                      <span className="ml-2 text-xs text-muted">калибруется</span>
+                    ) : null}
+                  </span>
+                  <LevelChip level={person.level} />
+                </li>
+              ))}
+            </ul>
+          </Card>
         )}
-      </Card>
+      </section>
     </div>
   );
 }
@@ -294,36 +305,52 @@ function RoundsTab({ tournament, rounds, viewerId }: TournamentViewProps) {
 
   if (rounds.length === 0) {
     return (
-      <Card>
-        <p className="text-sm text-muted">
-          Сетка появится после старта турнира. Организатор запускает его на вкладке «Инфо».
-        </p>
-      </Card>
+      <EmptyState
+        title="Сетка ещё не составлена"
+        hint="Она соберётся автоматически после старта — организатор запускает турнир на вкладке «Инфо»."
+      />
     );
   }
 
+  // Текущий раунд — первый незакрытый. Именно с ним работает организатор, и
+  // именно его хочет видеть игрок: остальные либо уже сыграны, либо ещё нет.
+  const activeRound =
+    rounds.find((round) => round.status !== 'COMPLETED')?.roundNumber ??
+    rounds[rounds.length - 1]?.roundNumber;
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {rounds.map((round) => (
         <RoundCard
           key={round.id}
           round={round}
           tournament={tournament}
           isOrganizer={isOrganizer}
+          open={round.roundNumber === activeRound}
         />
       ))}
     </div>
   );
 }
 
+/**
+ * Раунд.
+ *
+ * Раскрыт только текущий. Американо на восьмерых — это семь раундов по два
+ * корта: развёрнутые разом, они дают четыре тысячи пикселей одинаковых форм,
+ * где отличается лишь номер, а работать организатору всё равно есть над чем
+ * ровно в одном из них. Остальные складываются в строку со счётом.
+ */
 function RoundCard({
   round,
   tournament,
   isOrganizer,
+  open,
 }: {
   round: RoundView;
   tournament: TournamentDetails;
   isOrganizer: boolean;
+  open: boolean;
 }) {
   const [scoreState, scoreAction, savingScore] = useActionState<TournamentActionState, FormData>(
     saveScore,
@@ -337,20 +364,48 @@ function RoundCard({
   const complete = round.matches.every((match) => match.scoreA !== null);
   const closed = round.status === 'COMPLETED';
 
-  return (
-    <Card className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="font-medium">Раунд {round.roundNumber}</h2>
-        {closed ? <Badge tone="accent">закрыт</Badge> : <Badge>идёт</Badge>}
-      </div>
+  const scored = round.matches.filter((match) => match.scoreA !== null).length;
 
+  return (
+    <Card className="!p-0">
+      <details open={open} className="group">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
+          <h2 className="flex-1 text-[17px] font-semibold leading-tight">
+            Раунд {round.roundNumber}
+          </h2>
+          {closed ? (
+            <Badge>закрыт</Badge>
+          ) : scored === round.matches.length ? (
+            <Badge tone="accent">счёт введён</Badge>
+          ) : (
+            <span className="tabular text-[13px] text-muted">
+              счёт {scored} / {round.matches.length}
+            </span>
+          )}
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+            className="shrink-0 text-faint transition-transform group-open:rotate-180"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </summary>
+
+        <div className="flex flex-col gap-3 border-t border-border p-4">
       <Notice state={scoreState} />
       <Notice state={closeState} />
 
       <ul className="flex flex-col gap-3">
         {round.matches.map((match) => (
-          <li key={match.id} className="rounded-control border border-border p-3">
-            <p className="text-xs text-muted">Корт {match.courtNumber}</p>
+          <li key={match.id} className="rounded-control bg-sunken p-3">
+            <p className="label">Корт {match.courtNumber}</p>
 
             {/* Вид табло: каждая пара на своей строке со своим счётом. Имена в
                 паделе длинные, и в одну строку «А + Б — В + Г» они переносятся
@@ -413,6 +468,8 @@ function RoundCard({
           </Button>
         </form>
       ) : null}
+        </div>
+      </details>
     </Card>
   );
 }
@@ -439,7 +496,7 @@ function ScoreRow({
         defaultValue={defaultValue ?? ''}
         inputMode="numeric"
         aria-label={`Очки: ${label}`}
-        className="tabular min-h-11 w-16 shrink-0 rounded-control border border-border-strong bg-surface text-center text-base"
+        className="tabular min-h-11 w-16 shrink-0 rounded-control border border-border bg-surface text-center text-base font-semibold outline-none transition-colors focus:border-accent"
       />
     </label>
   );
@@ -456,8 +513,14 @@ function ScoreLine({
 }) {
   return (
     <div className="flex items-baseline gap-3">
-      <span className={`flex-1 text-sm ${winner ? 'font-medium' : ''}`}>{label}</span>
-      <span className={`tabular w-10 shrink-0 text-right ${winner ? 'font-semibold' : 'text-muted'}`}>
+      <span className={`flex-1 text-sm ${winner ? 'font-semibold' : 'text-text-secondary'}`}>
+        {label}
+      </span>
+      <span
+        className={`tabular w-10 shrink-0 text-right text-base ${
+          winner ? 'font-semibold' : 'text-muted'
+        }`}
+      >
         {score ?? '—'}
       </span>
     </div>
@@ -471,60 +534,81 @@ function StandingsTab({ tournament, standings, ratingChanges, viewerId }: Tourna
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
-        <h2 className="font-medium">Таблица</h2>
+      {standings.length === 0 ? (
+        <EmptyState
+          title="Таблица появится после первого раунда"
+          hint="Очки считаются автоматически, как только организатор закроет раунд."
+        />
+      ) : (
+        <Card className="!p-0">
+          <ol className="flex flex-col">
+            {standings.map((row, index) => {
+              const place = row.finalPlace ?? index + 1;
+              const me = row.id === viewerId;
 
-        {standings.length === 0 ? (
-          <p className="mt-2 text-sm text-muted">Таблица появится после первого раунда.</p>
-        ) : (
-          <ol className="mt-3 flex flex-col gap-1.5">
-            {standings.map((row, index) => (
-              <li
-                key={row.id}
-                className={`flex items-center gap-3 rounded-control px-2 py-2 text-sm ${
-                  row.id === viewerId ? 'bg-accent-soft' : ''
-                }`}
-              >
-                <span className="tabular w-6 text-center text-muted">
-                  {row.finalPlace ?? index + 1}
-                </span>
-                <span className="flex-1">
-                  {row.name}
-                  {row.members.length > 0 ? (
-                    <span className="block text-xs text-muted">{row.members.join(' и ')}</span>
-                  ) : null}
-                </span>
-                <span className="tabular shrink-0 text-right">
-                  <span className="font-medium">{row.points}</span>
-                  <span className="ml-2 text-xs text-muted">
-                    {row.pointsDiff >= 0 ? '+' : ''}
-                    {row.pointsDiff}
+              return (
+                <li
+                  key={row.id}
+                  className={`flex items-center gap-3 border-b border-border px-3.5 py-3 text-sm last:border-0 ${
+                    me ? 'bg-accent-soft' : ''
+                  }`}
+                >
+                  {/* Призовая тройка выделена весом, а не медалью: цвет здесь
+                      уже занят отметкой «это вы». */}
+                  <span
+                    className={`tabular w-6 shrink-0 text-center ${
+                      place <= 3 ? 'text-base font-semibold' : 'text-muted'
+                    }`}
+                  >
+                    {place}
                   </span>
-                </span>
-              </li>
-            ))}
+                  <span className="min-w-0 flex-1">
+                    <span className={`block truncate ${me ? 'font-semibold' : ''}`}>{row.name}</span>
+                    {row.members.length > 0 ? (
+                      <span className="block truncate text-xs text-muted">
+                        {row.members.join(' и ')}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="tabular shrink-0 text-right">
+                    <span className="text-base font-semibold">{row.points}</span>
+                    <span className="ml-2 w-9 text-xs text-muted">
+                      {row.pointsDiff >= 0 ? '+' : ''}
+                      {row.pointsDiff}
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
           </ol>
-        )}
+        </Card>
+      )}
 
-        <p className="mt-3 text-xs text-muted">
-          Очки игрока за раунд равны очкам его пары. При равенстве выше тот, у кого лучше разница.
-        </p>
-      </Card>
+      <p className="text-xs text-muted">
+        Очки игрока за раунд равны очкам его пары. При равенстве выше тот, у кого лучше разница.
+      </p>
 
       {ratingChanges.length > 0 ? (
         <Card>
-          <h2 className="font-medium">Изменение уровня</h2>
-          <ul className="mt-3 flex flex-col gap-1.5 text-sm">
+          <p className="label">Изменение уровня</p>
+          <ul className="mt-2 flex flex-col text-sm">
             {ratingChanges.map((change) => (
-              <li key={change.userId} className="flex items-center justify-between gap-3">
-                <span>{change.name}</span>
-                <span className="tabular flex items-center gap-2">
+              <li
+                key={change.userId}
+                className="flex items-center justify-between gap-3 border-b border-border py-2 last:border-0 last:pb-0"
+              >
+                <span className="min-w-0 truncate">{change.name}</span>
+                <span className="tabular flex shrink-0 items-center gap-2">
                   <span className="text-muted">{formatLevel(change.levelBefore)}</span>
-                  <span aria-hidden className="text-muted">
+                  <span aria-hidden className="text-faint">
                     →
                   </span>
-                  <span className="font-medium">{formatLevel(change.levelAfter)}</span>
-                  <span className={change.delta >= 0 ? 'text-accent' : 'text-danger'}>
+                  <span className="font-semibold">{formatLevel(change.levelAfter)}</span>
+                  <span
+                    className={`w-14 text-right font-medium ${
+                      change.delta >= 0 ? 'text-accent' : 'text-danger'
+                    }`}
+                  >
                     {change.delta >= 0 ? '+' : ''}
                     {change.delta.toFixed(3)}
                   </span>
@@ -540,7 +624,7 @@ function StandingsTab({ tournament, standings, ratingChanges, viewerId }: Tourna
       ) : null}
 
       {isOrganizer && tournament.status === 'IN_PROGRESS' ? (
-        <Card className="flex flex-col gap-3">
+        <Card tone="action" className="flex flex-col gap-3">
           <Notice state={state} />
           <form action={formAction}>
             <input type="hidden" name="tournamentId" value={tournament.id} />
@@ -569,8 +653,8 @@ function StandingsTab({ tournament, standings, ratingChanges, viewerId }: Tourna
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-muted">{label}</dt>
+    <div className="flex items-baseline justify-between gap-3 border-b border-border pb-2 last:border-0 last:pb-0">
+      <dt className="shrink-0 text-text-secondary">{label}</dt>
       <dd className="text-right font-medium">{children}</dd>
     </div>
   );

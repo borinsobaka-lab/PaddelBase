@@ -6,21 +6,29 @@ import {
 } from '@paddelbase/core';
 import { prisma } from '@paddelbase/db';
 import { formatLevel } from '@paddelbase/rating';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { Badge, LevelChip } from '@/components/Badges';
-import { Card } from '@/components/ui';
+import { LevelChip } from '@/components/Badges';
+import { CourtLineup } from '@/components/CourtLineup';
+import { BackLink, Card, SectionHeader } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 import {
   MATCH_STATUS_NAMES,
-  formatDateTime,
+  formatDay,
   formatDuration,
   formatSlots,
+  formatTime,
 } from '@/lib/format';
 
 import { ApplicationsPanel, ConfirmPanel, JoinPanel, LeavePanel, ScorePanel } from './panels';
 
+/**
+ * Карточка матча целиком.
+ *
+ * Экран отвечает на три вопроса по порядку: когда и где играем, кто играет,
+ * что от меня требуется. Раньше все блоки были одинаковыми карточками с
+ * подзаголовком, и «Ввести счёт» терялся между составом и кнопкой выхода.
+ */
 export default async function MatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireOnboardedUser();
@@ -39,71 +47,101 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
   const enteredByMe = result?.enteredById === user.id;
   const awaitingMyConfirmation =
-    result !== null && result.confirmedAt === null && result.disputedAt === null && isPlayer && !enteredByMe;
+    result !== null &&
+    result.confirmedAt === null &&
+    result.disputedAt === null &&
+    isPlayer &&
+    !enteredByMe;
 
   return (
-    <main className="flex flex-col gap-4 pb-10">
-      <div className="flex items-center gap-3 pt-6">
-        <Link href="/home" className="text-sm text-muted">
-          ← Назад
-        </Link>
-      </div>
+    <main className="flex flex-col gap-5 pb-10">
+      <BackLink href="/home" />
 
-      <Card>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold leading-snug">{formatDateTime(match.startsAt)}</h1>
-            <p className="mt-1 text-sm text-muted">
-              {match.courtName} · {match.courtCity} · {formatDuration(match.durationMin)}
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-col items-end gap-1">
-            {match.isRated ? <Badge tone="accent">рейтинговый</Badge> : <Badge>любительский</Badge>}
-            {match.courtBooked ? <Badge>корт забронирован</Badge> : null}
-          </div>
-        </div>
-
-        <p className="mt-3 text-sm">
-          {MATCH_STATUS_NAMES[match.status] ?? match.status}
-          {match.status === 'OPEN' ? ` · ${formatSlots(match.slotsMissing)}` : ''}
+      {/* Шапка стоит на холсте, а не в карточке: это заголовок экрана, а не
+          один из его блоков. Карточка вокруг заголовка уравнивала его с
+          остальными и отнимала у экрана точку входа. */}
+      <header>
+        {/* Тот же порядок, что и в карточке ленты: время ведёт, день идёт
+            следом. Игрок узнаёт матч по времени, и переучивать его на
+            детальном экране незачем. */}
+        <h1 className="text-[28px] font-semibold leading-tight">
+          <span className="tabular">{formatTime(match.startsAt)}</span>
+          <span className="ml-2.5 text-[19px] font-normal text-text-secondary">
+            {formatDay(match.startsAt)}
+          </span>
+        </h1>
+        <p className="mt-1.5 text-[15px] text-text-secondary">
+          {match.courtName} · {match.courtCity}
         </p>
+        <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
+          <span>{formatDuration(match.durationMin)}</span>
+          <Dot />
+          <span>{MATCH_STATUS_NAMES[match.status] ?? match.status}</span>
+          {match.status === 'OPEN' ? (
+            <>
+              <Dot />
+              <span>{formatSlots(match.slotsMissing)}</span>
+            </>
+          ) : null}
+          {match.isRated ? null : (
+            <>
+              <Dot />
+              <span>без рейтинга</span>
+            </>
+          )}
+          {match.courtBooked ? (
+            <>
+              <Dot />
+              <span>корт забронирован</span>
+            </>
+          ) : null}
+        </p>
+      </header>
 
-        {match.comment ? (
-          <p className="mt-3 rounded-control bg-surface-raised p-3 text-sm">{match.comment}</p>
-        ) : null}
-      </Card>
+      {match.comment ? (
+        <Card>
+          <p className="whitespace-pre-wrap text-sm">{match.comment}</p>
+        </Card>
+      ) : null}
 
-      <Card>
-        <h2 className="font-medium">Состав</h2>
-        <ul className="mt-3 flex flex-col gap-2">
-          {match.players.map((player) => (
-            <li key={player.id} className="flex items-center justify-between gap-3 text-sm">
-              <span>
-                {player.name}
-                {player.id === match.creatorId ? (
-                  <span className="ml-2 text-xs text-muted">организатор</span>
-                ) : null}
+      <section className="flex flex-col gap-3">
+        <SectionHeader>Состав</SectionHeader>
+
+        <Card className="flex flex-col gap-4">
+          <CourtLineup
+            players={match.players}
+            slotsMissing={match.slotsMissing}
+            size="md"
+            highlightId={user.id}
+          />
+
+          <ul className="flex flex-col">
+            {match.players.map((player) => (
+              <li
+                key={player.id}
+                className="flex items-center justify-between gap-3 border-b border-border py-2.5 text-sm last:border-0 last:pb-0 first:pt-0"
+              >
+                <span className="min-w-0 truncate">
+                  {player.name}
+                  {player.id === match.creatorId ? (
+                    <span className="ml-2 text-xs text-muted">организатор</span>
+                  ) : null}
+                </span>
+                <LevelChip level={player.level} />
+              </li>
+            ))}
+          </ul>
+
+          {match.levelMin !== null && match.levelMax !== null ? (
+            <p className="text-[13px] text-muted">
+              Ищут игроков уровня{' '}
+              <span className="tabular">
+                {formatLevel(match.levelMin)}–{formatLevel(match.levelMax)}
               </span>
-              <LevelChip level={player.level} />
-            </li>
-          ))}
-
-          {Array.from({ length: match.slotsMissing }, (_, index) => (
-            <li
-              key={`empty-${index}`}
-              className="rounded-control border border-dashed border-border-strong px-3 py-2 text-sm text-muted"
-            >
-              Свободное место
-            </li>
-          ))}
-        </ul>
-
-        {match.levelMin !== null && match.levelMax !== null ? (
-          <p className="mt-3 text-xs text-muted">
-            Ищут игроков уровня {formatLevel(match.levelMin)}–{formatLevel(match.levelMax)}
-          </p>
-        ) : null}
-      </Card>
+            </p>
+          ) : null}
+        </Card>
+      </section>
 
       {isCreator && applications.length > 0 ? (
         <ApplicationsPanel matchId={match.id} applications={applications} match={match} />
@@ -118,52 +156,64 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
       ) : null}
 
       {result !== null ? (
-        <Card>
-          <h2 className="font-medium">Результат</h2>
-          <p className="tabular mt-2 text-lg">
-            {(result.sets as unknown as { a: number; b: number }[])
-              .map((set) => `${set.a}:${set.b}`)
-              .join(', ')}
-          </p>
-          <p className="mt-1 text-sm text-muted">
-            Победила {result.winnerTeam === 1 ? 'первая' : 'вторая'} пара
-          </p>
+        <section className="flex flex-col gap-3">
+          <SectionHeader>Результат</SectionHeader>
 
-          {result.disputedAt ? (
-            <p className="mt-3 rounded-control bg-warn-soft p-3 text-sm text-warn">
-              Результат оспорен. Рейтинг не изменится до ручного разбора.
+          <Card>
+            {/* Счёт — главное число экрана после времени, поэтому он крупный
+                и табличный: две карточки матчей рядом должны выравниваться. */}
+            <p className="tabular text-3xl font-semibold leading-none">
+              {(result.sets as unknown as { a: number; b: number }[])
+                .map((set) => `${set.a}:${set.b}`)
+                .join('  ')}
             </p>
-          ) : result.confirmedAt === null ? (
-            <p className="mt-3 text-sm text-muted">
-              Ждём подтверждения от соперников. Если за 48 часов никто не ответит, результат
-              засчитается автоматически.
+            <p className="mt-2 text-sm text-text-secondary">
+              Победила {result.winnerTeam === 1 ? 'первая' : 'вторая'} пара
             </p>
-          ) : null}
 
-          {ratingChanges.length > 0 ? (
-            <div className="mt-4">
-              <h3 className="text-sm font-medium">Изменение уровня</h3>
-              <ul className="mt-2 flex flex-col gap-1.5 text-sm">
-                {ratingChanges.map((change) => (
-                  <li key={change.userId} className="flex items-center justify-between gap-3">
-                    <span>{change.name}</span>
-                    <span className="tabular flex items-center gap-2">
-                      <span className="text-muted">{formatLevel(change.levelBefore)}</span>
-                      <span aria-hidden className="text-muted">
-                        →
+            {result.disputedAt ? (
+              <p className="mt-4 rounded-control bg-warn-soft px-3 py-2 text-sm text-warn">
+                Результат оспорен. Рейтинг не изменится до ручного разбора.
+              </p>
+            ) : result.confirmedAt === null ? (
+              <p className="mt-4 text-[13px] text-muted">
+                Ждём подтверждения от соперников. Если за 48 часов никто не ответит, результат
+                засчитается автоматически.
+              </p>
+            ) : null}
+
+            {ratingChanges.length > 0 ? (
+              <div className="mt-5">
+                <p className="label">Изменение уровня</p>
+                <ul className="mt-2 flex flex-col">
+                  {ratingChanges.map((change) => (
+                    <li
+                      key={change.userId}
+                      className="flex items-center justify-between gap-3 border-b border-border py-2 text-sm last:border-0 last:pb-0"
+                    >
+                      <span className="min-w-0 truncate">{change.name}</span>
+                      <span className="tabular flex shrink-0 items-center gap-2">
+                        <span className="text-muted">{formatLevel(change.levelBefore)}</span>
+                        <span aria-hidden className="text-faint">
+                          →
+                        </span>
+                        <span className="font-semibold">{formatLevel(change.levelAfter)}</span>
+                        <span
+                          className={`w-14 text-right font-medium ${
+                            change.delta >= 0 ? 'text-accent' : 'text-danger'
+                          }`}
+                        >
+                          {change.delta >= 0 ? '+' : ''}
+                          {change.delta.toFixed(3)}
+                        </span>
                       </span>
-                      <span className="font-medium">{formatLevel(change.levelAfter)}</span>
-                      <span className={change.delta >= 0 ? 'text-accent' : 'text-danger'}>
-                        {change.delta >= 0 ? '+' : ''}
-                        {change.delta.toFixed(3)}
-                      </span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-        </Card>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </Card>
+        </section>
       ) : null}
 
       {awaitingMyConfirmation ? <ConfirmPanel matchId={match.id} /> : null}
@@ -172,6 +222,14 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         <LeavePanel matchId={match.id} isCreator={isCreator} status={match.status} />
       ) : null}
     </main>
+  );
+}
+
+function Dot() {
+  return (
+    <span aria-hidden className="text-faint">
+      ·
+    </span>
   );
 }
 

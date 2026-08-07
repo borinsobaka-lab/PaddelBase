@@ -14,11 +14,11 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
   const body = (
     <>
       <div className="flex items-center gap-3">
-        <span className="flex size-9 items-center justify-center rounded-full bg-surface-raised text-sm font-medium">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sunken text-sm font-semibold text-text-secondary">
           {post.authorName[0]?.toUpperCase()}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-2 text-sm font-medium">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold">
             {post.authorName}
             {post.authorRole !== 'PLAYER' ? <Badge tone="accent">организатор</Badge> : null}
             {post.isPinned ? <Badge>закреплено</Badge> : null}
@@ -27,7 +27,9 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
         </div>
       </div>
 
-      {post.text ? <p className="mt-3 whitespace-pre-wrap text-sm">{post.text}</p> : null}
+      {post.text ? (
+        <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed">{post.text}</p>
+      ) : null}
 
       {post.media.length > 0 ? (
         <ul className={`mt-3 grid gap-2 ${post.media.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
@@ -59,7 +61,7 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
   );
 
   return (
-    <article className="rounded-card border border-border bg-surface p-4">
+    <article className="rounded-card bg-surface p-4 shadow-raise">
       {href ? (
         <Link href={href} className="block">
           {body}
@@ -68,14 +70,17 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
         body
       )}
 
-      <div className="mt-3 flex items-center gap-4 border-t border-border pt-3 text-sm">
+      <div className="-mb-1.5 mt-2 flex items-center gap-1 border-t border-border pt-1.5 text-sm">
         <form action={likeAction}>
           <input type="hidden" name="postId" value={post.id} />
           <button
             type="submit"
             disabled={liking}
             aria-pressed={post.likedByMe}
-            className={`flex min-h-9 items-center gap-1.5 ${post.likedByMe ? 'text-accent' : 'text-muted'}`}
+            aria-label={`Нравится, отметок: ${post.likes}`}
+            className={`pressable tabular flex min-h-11 items-center gap-1.5 rounded-control px-2 font-medium ${
+              post.likedByMe ? 'text-accent' : 'text-muted'
+            }`}
           >
             <HeartIcon filled={post.likedByMe} />
             {post.likes}
@@ -84,7 +89,8 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
 
         <Link
           href={href ?? `/community/${post.id}`}
-          className="flex min-h-9 items-center gap-1.5 text-muted"
+          aria-label={`Комментарии: ${post.comments}`}
+          className="pressable tabular flex min-h-11 items-center gap-1.5 rounded-control px-2 font-medium text-muted"
         >
           <CommentIcon />
           {post.comments}

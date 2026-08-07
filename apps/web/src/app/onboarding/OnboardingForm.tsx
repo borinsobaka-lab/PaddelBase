@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from 'react';
 
-import { Button, ErrorNote, PageTitle } from '@/components/ui';
+import { Button, ChoiceRow, ErrorNote, PageTitle, StickyBar } from '@/components/ui';
 import { QUESTIONS } from '@/lib/questionnaire';
 
 import { submitOnboarding, type OnboardingFormState } from './actions';
@@ -19,59 +19,77 @@ export function OnboardingForm() {
   const complete = done === total;
 
   return (
-    <main>
+    <main className="pb-4">
       <PageTitle subtitle="Десять вопросов, чтобы определить стартовый уровень. Отвечайте честно: заниженный ответ всё равно раскроется за первые матчи, а завышенный испортит подбор соперников.">
         Ваш уровень
       </PageTitle>
 
-      <form action={formAction} className="flex flex-col gap-6">
-        {QUESTIONS.map((question, index) => (
-          <fieldset key={question.key} className="rounded-card border border-border bg-surface p-4">
-            <legend className="sr-only">{question.title}</legend>
+      {/* Полоса прогресса прилипает к верху: анкета длинная, и на пятом вопросе
+          важно видеть, что осталось немного. Раньше об этом говорила только
+          подпись «Вопрос 5 из 10» внутри карточки. */}
+      <div className="sticky top-0 z-10 -mx-4 bg-canvas/92 px-4 pb-3 pt-2 backdrop-blur">
+        <div className="flex items-center gap-3">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-sunken">
+            <div
+              className="h-full rounded-full bg-accent transition-[width] duration-300"
+              style={{ width: `${Math.round((done / total) * 100)}%` }}
+            />
+          </div>
+          <span className="tabular shrink-0 text-[13px] font-medium text-text-secondary">
+            {done} / {total}
+          </span>
+        </div>
+      </div>
 
-            <p className="text-xs font-medium text-muted">
-              Вопрос {index + 1} из {total}
-            </p>
-            <p className="mt-1 font-medium">{question.title}</p>
-            {question.hint ? <p className="mt-1 text-xs text-muted">{question.hint}</p> : null}
+      <form action={formAction} className="flex flex-col gap-5 pt-2">
+        {QUESTIONS.map((question, index) => {
+          const chosen = answered[question.key];
 
-            <div className="mt-3 flex flex-col gap-2">
-              {question.options.map((option) => {
-                const selected = answered[question.key] === option.value;
+          return (
+            <fieldset key={question.key}>
+              <legend className="sr-only">{question.title}</legend>
 
-                return (
-                  <label
+              <div className="flex items-baseline gap-2">
+                {/* Номер вопроса — цифрой, а не фразой «Вопрос 3 из 10»:
+                    общий счётчик уже стоит в полосе прогресса, и повторять
+                    его десять раз незачем. */}
+                <span
+                  className={`tabular flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                    chosen ? 'bg-accent text-accent-ink' : 'bg-sunken text-muted'
+                  }`}
+                  aria-hidden
+                >
+                  {index + 1}
+                </span>
+                <p className="text-[17px] font-semibold leading-snug">{question.title}</p>
+              </div>
+
+              {question.hint ? (
+                <p className="ml-8 mt-1 text-[13px] text-muted">{question.hint}</p>
+              ) : null}
+
+              <div className="ml-8 mt-3 flex flex-col gap-2">
+                {question.options.map((option) => (
+                  <ChoiceRow
                     key={option.value}
-                    className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-control border px-3 py-2 text-sm transition-colors ${
-                      selected
-                        ? 'border-accent bg-accent-soft'
-                        : 'border-border bg-surface hover:border-border-strong'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name={question.key}
-                      value={option.value}
-                      checked={selected}
-                      onChange={() =>
-                        setAnswered((previous) => ({ ...previous, [question.key]: option.value }))
-                      }
-                      className="size-4 shrink-0 accent-[var(--color-accent)]"
-                      required
-                    />
-                    <span>{option.label}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </fieldset>
-        ))}
+                    name={question.key}
+                    value={option.value}
+                    checked={chosen === option.value}
+                    onChange={() =>
+                      setAnswered((previous) => ({ ...previous, [question.key]: option.value }))
+                    }
+                    required
+                    label={option.label}
+                  />
+                ))}
+              </div>
+            </fieldset>
+          );
+        })}
 
         {state.error ? <ErrorNote>{state.error}</ErrorNote> : null}
 
-        {/* Кнопка прилипает к низу: анкета длинная, и прокручивать её обратно
-            ради отправки было бы издевательством. */}
-        <div className="sticky bottom-0 -mx-4 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur">
+        <StickyBar>
           {/* Пока анкета не заполнена, кнопка тихая: яркая зелёная кнопка,
               которая ничего не делает, только провоцирует по ней жать. */}
           <Button
@@ -83,9 +101,9 @@ export function OnboardingForm() {
               ? 'Считаем уровень…'
               : complete
                 ? 'Узнать свой уровень'
-                : `Отвечено ${done} из ${total}`}
+                : `Осталось ${total - done} из ${total}`}
           </Button>
-        </div>
+        </StickyBar>
       </form>
     </main>
   );

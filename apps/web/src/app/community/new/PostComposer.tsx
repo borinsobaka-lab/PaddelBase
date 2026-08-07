@@ -1,10 +1,9 @@
 'use client';
 
 import type { MediaItem } from '@paddelbase/core';
-import Link from 'next/link';
 import { useActionState, useRef, useState } from 'react';
 
-import { Button, Card, ErrorNote, PageTitle } from '@/components/ui';
+import { BackLink, Button, Card, ErrorNote, PageTitle, StickyBar } from '@/components/ui';
 
 import { publish, type CommunityActionState } from '../actions';
 
@@ -110,12 +109,8 @@ export function PostComposer() {
   }
 
   return (
-    <main className="pb-24">
-      <div className="flex items-center gap-3 pt-6">
-        <Link href="/community" className="text-sm text-muted">
-          ← Назад
-        </Link>
-      </div>
+    <main className="pb-4">
+      <BackLink href="/community" />
 
       <PageTitle>Новый пост</PageTitle>
 
@@ -130,11 +125,15 @@ export function PostComposer() {
             rows={6}
             maxLength={MAX_TEXT}
             placeholder="Ищем четвёртого в субботу, играем в Ваке…"
-            className="w-full resize-none bg-transparent text-base outline-none placeholder:text-muted"
+            className="w-full resize-none bg-transparent text-base outline-none placeholder:text-faint"
           />
-          <p className="text-right text-xs text-muted">
-            {text.length} / {MAX_TEXT}
-          </p>
+          {/* Счётчик появляется только на подходе к пределу: постоянное
+              «0 / 2000» под пустым полем сообщает ровно ничего. */}
+          {text.length > MAX_TEXT - 200 ? (
+            <p className="tabular text-right text-xs text-warn">
+              {MAX_TEXT - text.length} символов осталось
+            </p>
+          ) : null}
         </Card>
 
         <Card className="flex flex-col gap-3">
@@ -174,16 +173,26 @@ export function PostComposer() {
             </ul>
           ) : null}
 
+          {/* Нативная кнопка выбора файла подписана по-разному в каждом
+              браузере и не поддаётся стилизации, поэтому сам input скрыт, а
+              нажатие проксируется с обычной кнопки. */}
           <input
             ref={inputRef}
             type="file"
             accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime"
             multiple
             onChange={(event) => void handleFiles(event.target.files)}
-            className="text-sm file:mr-3 file:min-h-11 file:rounded-control file:border file:border-border-strong file:bg-surface file:px-4 file:text-sm"
+            className="sr-only"
           />
 
-          {uploading ? <p className="text-sm text-muted">Загружаем…</p> : null}
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={uploading}
+            onClick={() => inputRef.current?.click()}
+          >
+            {uploading ? 'Загружаем…' : media.length > 0 ? 'Добавить ещё' : 'Выбрать фото или видео'}
+          </Button>
           {uploadError ? <ErrorNote>{uploadError}</ErrorNote> : null}
 
           <p className="text-xs text-muted">
@@ -194,7 +203,7 @@ export function PostComposer() {
 
         {state.error ? <ErrorNote>{state.error}</ErrorNote> : null}
 
-        <div className="sticky bottom-0 -mx-4 border-t border-border bg-bg/95 px-4 py-3 backdrop-blur">
+        <StickyBar>
           <Button
             type="submit"
             variant={empty ? 'ghost' : 'primary'}
@@ -202,7 +211,7 @@ export function PostComposer() {
           >
             {pending ? 'Публикуем…' : 'Опубликовать'}
           </Button>
-        </div>
+        </StickyBar>
       </form>
     </main>
   );

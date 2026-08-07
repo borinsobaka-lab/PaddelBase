@@ -6,12 +6,11 @@ import {
   listTournamentRatingChanges,
 } from '@paddelbase/core';
 import { prisma, toNumber } from '@paddelbase/db';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { Badge } from '@/components/Badges';
+import { BackLink } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
-import { TOURNAMENT_FORMAT_NAMES, formatDateTime } from '@/lib/format';
+import { TOURNAMENT_FORMAT_NAMES, formatDay, formatTime } from '@/lib/format';
 
 import { TournamentTabs } from './TournamentTabs';
 
@@ -45,21 +44,31 @@ export default async function TournamentPage({ params }: { params: Promise<{ id:
 
   return (
     <main className="flex flex-col gap-4 pb-10">
-      <div className="flex items-center gap-3 pt-6">
-        <Link href="/games" className="text-sm text-muted">
-          ← Назад
-        </Link>
-      </div>
+      <BackLink href="/games" />
 
-      <header>
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="text-xl font-semibold">{TOURNAMENT_FORMAT_NAMES[tournament.format]}</h1>
-          {tournament.isRated ? <Badge tone="accent">рейтинговый</Badge> : <Badge>любительский</Badge>}
-        </div>
-        <p className="mt-1 text-sm text-muted">
-          {formatDateTime(tournament.startsAt)} · {tournament.courtName}
+      {/* Формат — имя турнира, время — то, по чему его узнают. Статус идёт
+          третьей строкой и обычным весом: он меняется сам, и выделять его
+          наравне с названием незачем. */}
+      <header className="pt-3">
+        <h1 className="text-[26px] font-semibold leading-tight">
+          {TOURNAMENT_FORMAT_NAMES[tournament.format]}
+        </h1>
+        <p className="mt-1.5 text-[15px] text-text-secondary">
+          <span className="tabular">{formatTime(tournament.startsAt)}</span>
+          {' · '}
+          {formatDay(tournament.startsAt)} · {tournament.courtName}
         </p>
-        <p className="mt-1 text-sm">{STATUS_NAMES[tournament.status] ?? tournament.status}</p>
+        <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
+          <span>{STATUS_NAMES[tournament.status] ?? tournament.status}</span>
+          {tournament.isRated ? null : (
+            <>
+              <span aria-hidden className="text-faint">
+                ·
+              </span>
+              <span>без рейтинга</span>
+            </>
+          )}
+        </p>
       </header>
 
       <TournamentTabs

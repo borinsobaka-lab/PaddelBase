@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ComponentProps, ReactNode } from 'react';
 
 /**
@@ -84,6 +85,128 @@ export function TextInput(props: ComponentProps<'input'>) {
   );
 }
 
+/** Многострочный ввод. Утоплен так же, как TextInput: правило одно на все поля. */
+export function Textarea(props: ComponentProps<'textarea'>) {
+  return (
+    <textarea
+      className="w-full rounded-control border border-border bg-sunken p-3 text-base outline-none transition-colors placeholder:text-faint focus:border-accent focus:bg-surface"
+      {...props}
+    />
+  );
+}
+
+/**
+ * Выпадающий список.
+ *
+ * Нативный `select` стилизуется плохо, но заменять его самодельным меню ради
+ * стрелки — плохая сделка: колесо выбора на телефоне удобнее любого нашего
+ * списка. Поэтому убирается только системная стрелка, а поведение остаётся
+ * платформенным.
+ */
+export function Select({ className = '', ...props }: ComponentProps<'select'>) {
+  return (
+    <div className="relative">
+      <select
+        className={`min-h-11 w-full appearance-none rounded-control border border-border bg-sunken py-2 pl-3 pr-10 text-base outline-none transition-colors focus:border-accent focus:bg-surface ${className}`}
+        {...props}
+      />
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
+      >
+        <path d="m6 9 6 6 6-6" />
+      </svg>
+    </div>
+  );
+}
+
+/**
+ * Переключатель из нескольких вариантов в одну строку.
+ *
+ * Дорожка утоплена, выбранный вариант приподнят — то же правило глубины, что и
+ * во всём остальном приложении. Выбор читается по высоте, а не по цвету:
+ * зелёный нужен там, где он что-то значит, а не на каждом втором переключателе
+ * формы.
+ */
+export function Segmented({
+  children,
+  columns = 2,
+}: {
+  children: ReactNode;
+  columns?: 2 | 3 | 4;
+}) {
+  const cols = { 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' }[columns];
+  return <div className={`grid ${cols} gap-1 rounded-control bg-sunken p-1`}>{children}</div>;
+}
+
+export function SegmentedOption({
+  label,
+  compact = false,
+  ...props
+}: ComponentProps<'input'> & { label: ReactNode; compact?: boolean }) {
+  return (
+    <label
+      className={`pressable flex min-h-11 cursor-pointer items-center justify-center rounded-chip px-1 text-center font-medium text-text-secondary transition-colors has-checked:bg-surface has-checked:text-text has-checked:shadow-raise ${
+        compact ? 'text-[13px]' : 'text-sm'
+      }`}
+    >
+      <input type="radio" className="sr-only" {...props} />
+      {label}
+    </label>
+  );
+}
+
+/**
+ * Вариант ответа во всю ширину — для длинных формулировок, которые не влезают
+ * в переключатель. Радиокнопка остаётся видимой: в списке из шести пунктов
+ * подсветка выбранного без самой точки читается хуже.
+ */
+export function ChoiceRow({
+  label,
+  type = 'radio',
+  ...props
+}: ComponentProps<'input'> & { label: ReactNode }) {
+  return (
+    <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-control border border-border bg-surface p-3 text-sm transition-colors has-checked:border-accent has-checked:bg-accent-soft">
+      <input
+        type={type}
+        className="mt-px size-4 shrink-0 accent-[var(--color-accent)]"
+        {...props}
+      />
+      <span className="min-w-0">{label}</span>
+    </label>
+  );
+}
+
+/** Строка-флажок: сам флажок и подпись — одна цель нажатия высотой 44 px. */
+export function CheckRow({
+  label,
+  hint,
+  ...props
+}: ComponentProps<'input'> & { label: ReactNode; hint?: string }) {
+  return (
+    <label className="flex min-h-11 cursor-pointer items-center gap-3 py-1.5 text-sm">
+      <input
+        type="checkbox"
+        className="size-[18px] shrink-0 accent-[var(--color-accent)]"
+        {...props}
+      />
+      <span className="min-w-0">
+        <span className="block leading-snug">{label}</span>
+        {hint ? <span className="mt-0.5 block text-xs text-muted">{hint}</span> : null}
+      </span>
+    </label>
+  );
+}
+
 /** Сообщение об ошибке говорит, что произошло и что делать (ТЗ §9). */
 export function ErrorNote({ children }: { children: ReactNode }) {
   return (
@@ -93,12 +216,72 @@ export function ErrorNote({ children }: { children: ReactNode }) {
   );
 }
 
+/** Спокойное подтверждение: действие прошло, ничего делать не нужно. */
+export function InfoNote({ children }: { children: ReactNode }) {
+  return (
+    <p className="rounded-control bg-accent-soft px-3 py-2 text-sm text-accent">{children}</p>
+  );
+}
+
 export function PageTitle({ children, subtitle }: { children: ReactNode; subtitle?: string }) {
   return (
     <header className="pb-5 pt-7">
       <h1 className="text-[26px] font-semibold leading-tight">{children}</h1>
-      {subtitle ? <p className="mt-1.5 text-sm text-text-secondary">{subtitle}</p> : null}
+      {subtitle ? <p className="mt-1.5 max-w-[42ch] text-sm text-text-secondary">{subtitle}</p> : null}
     </header>
+  );
+}
+
+/**
+ * Возврат назад.
+ *
+ * Стрелка в тексте («← Назад») выглядит как строка, а не как кнопка, и по ней
+ * промахиваются: у неё нет ни площади, ни очертания. Здесь это круглая цель
+ * в 44 px на той же поверхности, что и остальные элементы управления.
+ */
+export function BackLink({ href, label = 'Назад' }: { href: string; label?: string }) {
+  return (
+    <div className="pt-4">
+      <Link
+        href={href}
+        aria-label={label}
+        className="pressable inline-flex size-11 items-center justify-center rounded-full bg-surface text-text-secondary shadow-raise"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+      </Link>
+    </div>
+  );
+}
+
+/**
+ * Прилипшая снизу панель отправки.
+ *
+ * Формы здесь длинные — анкета на десять вопросов, создание турнира. Гонять
+ * игрока к низу страницы ради единственной кнопки незачем, поэтому кнопка
+ * едет вместе с ним. Растушёвка сверху нужна, чтобы контент уходил под панель
+ * не обрубленным краем.
+ */
+export function StickyBar({ children }: { children: ReactNode }) {
+  return (
+    <div className="sticky bottom-0 z-10 -mx-4 mt-1 px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 top-0 -z-10 bg-linear-to-t from-canvas from-70% to-transparent"
+      />
+      {children}
+    </div>
   );
 }
 

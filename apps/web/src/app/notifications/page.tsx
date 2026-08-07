@@ -2,7 +2,8 @@ import { listNotifications } from '@paddelbase/core';
 import { prisma } from '@paddelbase/db';
 import Link from 'next/link';
 
-import { Button, Card, PageTitle } from '@/components/ui';
+import { AppShell } from '@/components/AppShell';
+import { BackLink, EmptyState } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 import { formatDateTime } from '@/lib/format';
 
@@ -43,68 +44,91 @@ export default async function NotificationsPage() {
   const unread = notifications.filter((item) => !item.isRead).length;
 
   return (
-    <main className="flex flex-col gap-4 pb-10">
-      <div className="pt-6">
-        <Link href="/home" className="text-sm text-muted">
-          ← Главная
-        </Link>
-      </div>
+    <AppShell>
+      <main className="flex flex-col gap-4">
+        <BackLink href="/home" label="На главную" />
 
-      <PageTitle>Уведомления</PageTitle>
+        {/* Заголовок и «прочитать всё» на одной строке: раньше кнопка во всю
+            ширину стояла отдельным блоком и весила больше самого списка. */}
+        <header className="flex items-end justify-between gap-3 pb-1 pt-3">
+          <div>
+            <h1 className="text-[26px] font-semibold leading-tight">Уведомления</h1>
+            {unread > 0 ? (
+              <p className="mt-1 text-sm text-text-secondary">Непрочитанных: {unread}</p>
+            ) : null}
+          </div>
 
-      {unread > 0 ? (
-        <form action={markAllRead}>
-          <Button type="submit" variant="ghost">
-            Отметить всё прочитанным
-          </Button>
-        </form>
-      ) : null}
+          {unread > 0 ? (
+            <form action={markAllRead}>
+              <button
+                type="submit"
+                className="pressable -mb-2 -mr-2 min-h-11 px-2 text-sm font-medium text-accent"
+              >
+                Прочитать всё
+              </button>
+            </form>
+          ) : null}
+        </header>
 
-      {notifications.length === 0 ? (
-        <Card>
-          <p className="text-sm text-muted">
-            Уведомлений пока нет. Здесь появятся отклики на заявки, напоминания о матчах и
-            изменения уровня.
-          </p>
-        </Card>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {notifications.map((notification) => {
-            const href = linkFor(notification.payload);
-            const detail = detailFor(notification.type, notification.payload);
+        {notifications.length === 0 ? (
+          <EmptyState
+            title="Пока тихо"
+            hint="Здесь появятся отклики на заявки, напоминания о матчах и изменения уровня."
+          />
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {notifications.map((notification) => {
+              const href = linkFor(notification.payload);
+              const detail = detailFor(notification.type, notification.payload);
 
-            const content = (
-              <>
-                <p className="text-sm font-medium">
-                  {TEXTS[notification.type] ?? notification.type}
-                </p>
-                {detail ? <p className="tabular mt-0.5 text-sm">{detail}</p> : null}
-                <p className="mt-1 text-xs text-muted">{formatDateTime(notification.createdAt)}</p>
-              </>
-            );
+              const content = (
+                <>
+                  <div className="flex items-start gap-2.5">
+                    {/* Непрочитанное помечено точкой, а не жирным текстом:
+                        жирный уже занят самим заголовком уведомления. */}
+                    <span
+                      aria-hidden
+                      className={`mt-1.5 size-2 shrink-0 rounded-full ${
+                        notification.isRead ? 'bg-transparent' : 'bg-accent'
+                      }`}
+                    />
+                    <div className="min-w-0">
+                      <p
+                        className={`text-sm leading-snug ${
+                          notification.isRead ? 'text-text-secondary' : 'font-medium'
+                        }`}
+                      >
+                        {TEXTS[notification.type] ?? notification.type}
+                      </p>
+                      {detail ? (
+                        <p className="tabular mt-1 text-[15px] font-semibold">{detail}</p>
+                      ) : null}
+                      <p className="mt-1 text-xs text-muted">
+                        {formatDateTime(notification.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              );
 
-            return (
-              <li key={notification.id}>
-                {/* Непрочитанные помечены полосой слева, а не жирным текстом:
-                    жирный уже занят самим заголовком уведомления. */}
-                <div
-                  className={`rounded-card border bg-surface p-3 ${
-                    notification.isRead ? 'border-border' : 'border-l-4 border-l-accent border-border'
-                  }`}
-                >
+              return (
+                <li key={notification.id}>
                   {href ? (
-                    <Link href={href} className="block">
+                    <Link
+                      href={href}
+                      className="pressable block rounded-card bg-surface p-3.5 shadow-raise"
+                    >
                       {content}
                     </Link>
                   ) : (
-                    content
+                    <div className="rounded-card bg-surface p-3.5 shadow-raise">{content}</div>
                   )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </main>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </main>
+    </AppShell>
   );
 }

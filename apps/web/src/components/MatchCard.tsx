@@ -23,11 +23,14 @@ export function MatchCard({
   match,
   viewerId,
   variant = 'feed',
+  showDay = true,
 }: {
   match: MatchCardData;
   viewerId?: string;
   /** feed — компактная карточка в ленте; focus — карточка, требующая действия. */
   variant?: 'feed' | 'focus';
+  /** Выключается там, где день уже написан в заголовке группы. */
+  showDay?: boolean;
 }) {
   const action = match.needsAction;
   const focus = variant === 'focus';
@@ -49,7 +52,11 @@ export function MatchCard({
         <div className="min-w-0">
           <p className={`font-semibold ${focus ? 'text-[19px]' : 'text-base'} leading-tight`}>
             <span className="tabular">{formatTime(match.startsAt)}</span>
-            <span className="ml-2 font-normal text-text-secondary">{formatDay(match.startsAt)}</span>
+            {showDay ? (
+              <span className="ml-2 font-normal text-text-secondary">
+                {formatDay(match.startsAt)}
+              </span>
+            ) : null}
           </p>
           <p className="mt-1 truncate text-sm text-muted">
             {match.courtName} · {formatDuration(match.durationMin)}

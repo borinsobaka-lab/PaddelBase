@@ -1,9 +1,9 @@
 import { getComments, getFeed } from '@paddelbase/core';
 import { prisma } from '@paddelbase/db';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { PostCard } from '@/components/PostCard';
+import { BackLink } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 
 import { CommentsPanel, ModerationPanel, ReportPanel } from './panels';
@@ -26,12 +26,8 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   const card = feed.posts.find((entry) => entry.id === id);
 
   return (
-    <main className="flex flex-col gap-4 pb-10">
-      <div className="pt-6">
-        <Link href="/community" className="text-sm text-muted">
-          ← Лента
-        </Link>
-      </div>
+    <main className="flex flex-col gap-5 pb-10">
+      <BackLink href="/community" label="К ленте" />
 
       {card ? <PostCard post={card} /> : null}
 
