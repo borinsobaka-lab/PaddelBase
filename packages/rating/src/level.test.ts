@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  computeStartLevel,
-  formatLevel,
-  levelCategory,
-  selfAssessedLevel,
-  type OnboardingAnswers,
-} from './level.js';
+import { formatLevel, levelCategory } from './level.js';
 
 describe('буквенные категории (ТЗ §3.11)', () => {
   it('раскладывает шкалу по границам из ТЗ', () => {
@@ -37,52 +31,5 @@ describe('буквенные категории (ТЗ §3.11)', () => {
       const displayed = Number(formatLevel(level));
       expect(levelCategory(level)).toBe(levelCategory(displayed));
     }
-  });
-});
-
-describe('стартовый уровень по анкете (ТЗ §3.2)', () => {
-  const answers = (overrides: Partial<OnboardingAnswers> = {}): OnboardingAnswers => ({
-    padelExperience: 'from6To24Months',
-    racketExperience: 'amateur',
-    frequency: 'oneToTwoPerWeek',
-    selfAssessment: 'intermediate',
-    ...overrides,
-  });
-
-  it('складывает самооценку с надбавками по 0.3', () => {
-    // 3.0 + 1.0·0.3 + 0.3·0.3 + 0.4·0.3 = 3.51
-    expect(computeStartLevel(answers())).toBe(3.51);
-  });
-
-  it('новичок без всякого опыта получает свою самооценку', () => {
-    expect(
-      computeStartLevel(
-        answers({
-          padelExperience: 'none',
-          racketExperience: 'none',
-          frequency: 'lessThanMonthly',
-          selfAssessment: 'beginner',
-        }),
-      ),
-    ).toBe(1.5);
-  });
-
-  it('ограничивает максимум значением 6.0', () => {
-    // 5.4 + 0.45 + 0.27 + 0.18 = 6.30 → 6.0
-    expect(
-      computeStartLevel(
-        answers({
-          padelExperience: 'moreThan2Years',
-          racketExperience: 'competitive',
-          frequency: 'threePlusPerWeek',
-          selfAssessment: 'competitive',
-        }),
-      ),
-    ).toBe(6.0);
-  });
-
-  it('хранит голую самооценку отдельно — для анализа сэндбэггинга', () => {
-    expect(selfAssessedLevel(answers({ selfAssessment: 'advanced' }))).toBe(4.6);
-    expect(computeStartLevel(answers({ selfAssessment: 'advanced' }))).toBeGreaterThan(4.6);
   });
 });

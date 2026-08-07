@@ -34,7 +34,7 @@ CREATE TABLE "app"."users" (
     "telegramId" TEXT,
     "phone" TEXT,
     "firstName" TEXT NOT NULL,
-    "lastName" TEXT NOT NULL,
+    "lastName" TEXT,
     "avatarUrl" TEXT,
     "city" TEXT,
     "role" "app"."Role" NOT NULL DEFAULT 'PLAYER',
@@ -42,8 +42,11 @@ CREATE TABLE "app"."users" (
     "startLevel" DECIMAL(4,3) NOT NULL,
     "selfAssessedLevel" DECIMAL(4,3) NOT NULL,
     "onboardingAnswers" JSONB,
-    "reliabilityBase" DECIMAL(4,3) NOT NULL DEFAULT 0.050,
-    "reliability" DECIMAL(4,3) NOT NULL DEFAULT 0.050,
+    "startLevelBreakdown" JSONB,
+    "selfAssessmentInflated" BOOLEAN NOT NULL DEFAULT false,
+    "onboardingCompletedAt" TIMESTAMP(3),
+    "reliabilityBase" DECIMAL(4,3) NOT NULL DEFAULT 0.200,
+    "reliability" DECIMAL(4,3) NOT NULL DEFAULT 0.200,
     "ratedMatchesCount" INTEGER NOT NULL DEFAULT 0,
     "lastRatedMatchAt" TIMESTAMP(3),
     "activityScore" INTEGER NOT NULL DEFAULT 0,
@@ -330,6 +333,9 @@ CREATE UNIQUE INDEX "users_phone_key" ON "app"."users"("phone");
 
 -- CreateIndex
 CREATE INDEX "users_level_idx" ON "app"."users"("level");
+
+-- CreateIndex
+CREATE INDEX "users_firstName_idx" ON "app"."users"("firstName");
 
 -- CreateIndex
 CREATE INDEX "courts_city_isActive_idx" ON "app"."courts"("city", "isActive");

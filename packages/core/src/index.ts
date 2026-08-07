@@ -7,3 +7,4 @@ export * from './recompute.js';
 export * from './community.js';
 export * from './jobs.js';
 export * from './metrics.js';
+export * from './onboarding.js';

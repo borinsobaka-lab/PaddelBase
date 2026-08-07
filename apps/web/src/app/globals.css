@@ -1,0 +1,61 @@
+@import 'tailwindcss';
+
+/**
+ * Токены из ТЗ §9.
+ *
+ * Тёмная тема выбрана не ради моды: приложением пользуются у корта, при ярком
+ * солнце и одной рукой. Один яркий акцент, всё остальное — тихие поверхности.
+ */
+@theme {
+  --color-bg: #0e1116;
+  --color-surface: #171c24;
+  --color-surface-raised: #1e2531;
+  --color-border: #262e3a;
+  --color-text: #f2f5f8;
+  --color-muted: #93a0b4;
+  --color-accent: #3ddc84;
+  --color-accent-ink: #06170d;
+  --color-warn: #ffb020;
+  --color-danger: #ff6b6b;
+
+  --radius-card: 12px;
+  --radius-control: 8px;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Видимый фокус с клавиатуры — обязательный минимум качества (ТЗ §9). */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Цифры уровня — главный контент, а не подпись: им нужна табличная ширина,
+     чтобы значение не «прыгало» при изменении. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

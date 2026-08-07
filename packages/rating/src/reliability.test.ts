@@ -17,13 +17,13 @@ const T0 = new Date('2026-01-01T12:00:00Z');
 const at = (days: number) => new Date(T0.getTime() + days * DAY);
 
 describe('стартовое состояние', () => {
-  it('новичок после анкеты имеет надёжность 0.05', () => {
-    expect(initialReliability()).toBe(0.05);
+  it('новичок после анкеты имеет надёжность 0.20', () => {
+    expect(initialReliability()).toBe(0.2);
   });
 
   it('без сыгранных матчей надёжность не меняется со временем', () => {
     const state = initialReliabilityState();
-    expect(effectiveReliability(state, at(1000))).toBe(0.05);
+    expect(effectiveReliability(state, at(1000))).toBe(0.2);
   });
 });
 
@@ -31,16 +31,16 @@ describe('рост надёжности', () => {
   it('растёт на 1/N_FULL за каждый зачтённый матч', () => {
     let state = initialReliabilityState();
     state = applyRatedMatch(state, at(1));
-    expect(state.reliabilityBase).toBe(0.1);
+    expect(state.reliabilityBase).toBe(0.25);
     expect(state.ratedMatchesCount).toBe(1);
 
     state = applyRatedMatch(state, at(2));
-    expect(state.reliabilityBase).toBe(0.15);
+    expect(state.reliabilityBase).toBe(0.3);
   });
 
-  it('достигает порога калибровки на 11-м матче и никогда не превышает 1.0', () => {
+  it('достигает порога калибровки на 8-м матче и никогда не превышает 1.0', () => {
     let state = initialReliabilityState();
-    for (let i = 1; i <= 11; i += 1) state = applyRatedMatch(state, at(i));
+    for (let i = 1; i <= 8; i += 1) state = applyRatedMatch(state, at(i));
     expect(state.reliabilityBase).toBe(0.6);
     expect(isCalibrated(state.reliabilityBase)).toBe(true);
 
@@ -49,7 +49,7 @@ describe('рост надёжности', () => {
   });
 
   it('считает, сколько матчей осталось до подтверждения уровня', () => {
-    expect(matchesUntilCalibrated(0.05)).toBe(11);
+    expect(matchesUntilCalibrated(0.2)).toBe(8);
     expect(matchesUntilCalibrated(0.5)).toBe(2);
     expect(matchesUntilCalibrated(0.6)).toBe(0);
   });
@@ -77,11 +77,11 @@ describe('затухание при простое (ТЗ §3.4)', () => {
 
   it('не поднимает надёжность новичка до пола', () => {
     const rookie: ReliabilityState = {
-      reliabilityBase: 0.05,
+      reliabilityBase: 0.2,
       lastRatedMatchAt: T0,
       ratedMatchesCount: 1,
     };
-    expect(effectiveReliability(rookie, at(10_000))).toBe(0.05);
+    expect(effectiveReliability(rookie, at(10_000))).toBe(0.2);
   });
 
   /**

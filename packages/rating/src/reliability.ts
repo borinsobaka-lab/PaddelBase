@@ -39,11 +39,10 @@ export function roundReliability(value: number): number {
 }
 
 /**
- * Надёжность новичка сразу после анкеты. Выражена через N_FULL, а не константой
- * 0.05, чтобы шкала оставалась согласованной при изменении N_FULL.
+ * Надёжность новичка сразу после анкеты (см. RatingConfig.INITIAL_RELIABILITY).
  */
 export function initialReliability(config: RatingConfig = RATING_CONFIG): number {
-  return roundReliability(1 / config.N_FULL);
+  return roundReliability(config.INITIAL_RELIABILITY);
 }
 
 export function initialReliabilityState(config: RatingConfig = RATING_CONFIG): ReliabilityState {
@@ -60,7 +59,7 @@ function idleDays(from: Date, to: Date): number {
 
 /**
  * Затухание за простой. Порог `min(base, FLOOR)` вместо просто `FLOOR` важен:
- * у новичка надёжность (0.05) заведомо ниже пола (0.30), и без этого простой
+ * у новичка надёжность (0.20) заведомо ниже пола (0.30), и без этого простой
  * бы её не понижал, а поднимал.
  */
 export function decayReliability(

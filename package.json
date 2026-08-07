@@ -7,7 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm --filter @paddelbase/db generate && pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "db:generate": "pnpm --filter @paddelbase/db generate",
@@ -15,7 +15,8 @@
     "db:deploy": "pnpm --filter @paddelbase/db migrate:deploy",
     "db:seed": "pnpm --filter @paddelbase/db seed",
     "rating:recompute": "pnpm --filter @paddelbase/core recompute",
-    "rating:metrics": "pnpm --filter @paddelbase/core metrics"
+    "rating:metrics": "pnpm --filter @paddelbase/core metrics",
+    "dev": "pnpm --filter @paddelbase/web dev"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

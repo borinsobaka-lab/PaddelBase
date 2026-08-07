@@ -1,7 +1,6 @@
 import {
   computeStartLevel,
   initialReliability,
-  selfAssessedLevel as computeSelfAssessedLevel,
   type OnboardingAnswers,
 } from '@paddelbase/rating';
 import { PrismaClient } from '@prisma/client';
@@ -13,90 +12,130 @@ import { DEFAULT_COURTS } from './courts.js';
 const prisma = new PrismaClient();
 
 interface SeedPlayer {
-  firstName: string;
-  lastName: string;
+  name: string;
   answers: OnboardingAnswers;
 }
 
+/** Профили подобраны так, чтобы покрыть все ветки расчёта стартового уровня. */
 const TEST_PLAYERS: SeedPlayer[] = [
   {
-    firstName: 'Тест',
-    lastName: 'Новичок',
+    name: 'Тест Новичок',
     answers: {
-      padelExperience: 'none',
-      racketExperience: 'none',
-      frequency: 'lessThanMonthly',
+      padelExperience: 'never',
+      frequency: 'irregular',
+      coaching: 'none',
+      racketBackground: 'none',
+      wallPlay: 'lost',
+      overhead: 'none',
+      serveAndReturn: 'weak',
+      positioning: 'unaware',
+      competitive: 'none',
+      selfAssessment: 'completeBeginner',
+    },
+  },
+  {
+    name: 'Тест Полгода',
+    answers: {
+      padelExperience: 'from3To6Months',
+      frequency: 'weekly',
+      coaching: 'none',
+      racketBackground: 'none',
+      wallPlay: 'slowStraight',
+      overhead: 'uncontrolledSmash',
+      serveAndReturn: 'inPlay',
+      positioning: 'basic',
+      competitive: 'none',
       selfAssessment: 'beginner',
     },
   },
   {
-    firstName: 'Тест',
-    lastName: 'Начинающий',
+    name: 'Тест Средний',
     answers: {
-      padelExperience: 'lessThan6Months',
-      racketExperience: 'amateur',
-      frequency: 'oneToThreePerMonth',
-      selfAssessment: 'elementary',
+      padelExperience: 'from1To2Years',
+      frequency: 'weekly',
+      coaching: 'fewSessions',
+      racketBackground: 'amateur',
+      wallPlay: 'mediumConfident',
+      overhead: 'unstableBandeja',
+      serveAndReturn: 'inPlay',
+      positioning: 'basic',
+      competitive: 'friendly',
+      selfAssessment: 'beginner',
     },
   },
   {
-    firstName: 'Тест',
-    lastName: 'Средний',
+    name: 'Тест Уверенный',
     answers: {
-      padelExperience: 'from6To24Months',
-      racketExperience: 'amateur',
-      frequency: 'oneToTwoPerWeek',
-      selfAssessment: 'intermediate',
+      padelExperience: 'from2To4Years',
+      frequency: 'twoToThreePerWeek',
+      coaching: 'monthsRegular',
+      racketBackground: 'amateur',
+      wallPlay: 'anglesAndSideWall',
+      overhead: 'stableBandeja',
+      serveAndReturn: 'directional',
+      positioning: 'movesWithPartner',
+      competitive: 'amateurLeagues',
+      selfAssessment: 'strongAmateur',
     },
   },
   {
-    firstName: 'Тест',
-    lastName: 'Уверенный',
+    name: 'Тест Турнирный',
     answers: {
-      padelExperience: 'from6To24Months',
-      racketExperience: 'confident',
-      frequency: 'oneToTwoPerWeek',
-      selfAssessment: 'upperIntermediate',
-    },
-  },
-  {
-    firstName: 'Тест',
-    lastName: 'Продвинутый',
-    answers: {
-      padelExperience: 'moreThan2Years',
-      racketExperience: 'confident',
-      frequency: 'threePlusPerWeek',
+      padelExperience: 'moreThan4Years',
+      frequency: 'fourPlusPerWeek',
+      coaching: 'yearPlus',
+      racketBackground: 'intermediate',
+      wallPlay: 'fastLowAndDouble',
+      overhead: 'choosesUnderPressure',
+      serveAndReturn: 'tactical',
+      positioning: 'readsTheGame',
+      competitive: 'regularTournaments',
       selfAssessment: 'advanced',
     },
   },
   {
-    firstName: 'Тест',
-    lastName: 'Соревновательный',
+    name: 'Тест Теннисист',
     answers: {
-      padelExperience: 'moreThan2Years',
-      racketExperience: 'competitive',
-      frequency: 'threePlusPerWeek',
-      selfAssessment: 'competitive',
+      padelExperience: 'lessThan3Months',
+      frequency: 'weekly',
+      coaching: 'none',
+      racketBackground: 'professional',
+      wallPlay: 'lost',
+      overhead: 'uncontrolledSmash',
+      serveAndReturn: 'inPlay',
+      positioning: 'basic',
+      competitive: 'none',
+      selfAssessment: 'confidentIntermediate',
     },
   },
   {
-    firstName: 'Тест',
-    lastName: 'Теннисист',
+    name: 'Тест Скромный',
     answers: {
-      padelExperience: 'none',
-      racketExperience: 'competitive',
-      frequency: 'oneToTwoPerWeek',
-      selfAssessment: 'intermediate',
+      padelExperience: 'from2To4Years',
+      frequency: 'twoToThreePerWeek',
+      coaching: 'monthsRegular',
+      racketBackground: 'intermediate',
+      wallPlay: 'anglesAndSideWall',
+      overhead: 'stableBandeja',
+      serveAndReturn: 'directional',
+      positioning: 'movesWithPartner',
+      competitive: 'amateurLeagues',
+      selfAssessment: 'beginner',
     },
   },
   {
-    firstName: 'Тест',
-    lastName: 'Возвращенец',
+    name: 'Тест Хвастун',
     answers: {
-      padelExperience: 'moreThan2Years',
-      racketExperience: 'amateur',
-      frequency: 'lessThanMonthly',
-      selfAssessment: 'upperIntermediate',
+      padelExperience: 'from3To6Months',
+      frequency: 'oneToTwoPerMonth',
+      coaching: 'none',
+      racketBackground: 'none',
+      wallPlay: 'slowStraight',
+      overhead: 'none',
+      serveAndReturn: 'weak',
+      positioning: 'unaware',
+      competitive: 'none',
+      selfAssessment: 'advanced',
     },
   },
 ];
@@ -116,26 +155,31 @@ async function main(): Promise<void> {
     }
   }
 
-  for (const [index, player] of TEST_PLAYERS.entries()) {
-    const telegramId = `seed-${index + 1}`;
-    const startLevel = computeStartLevel(player.answers);
+  for (const player of TEST_PLAYERS) {
+    const [firstName, ...rest] = player.name.split(' ');
+    const lastName = rest.join(' ');
 
     // Стартовый уровень считается тем же кодом, что и в проде: seed не должен
     // расходиться с боевой формулой, иначе тестовые данные врут.
-    await prisma.user.upsert({
-      where: { telegramId },
-      update: {},
-      create: {
-        telegramId,
-        firstName: player.firstName,
-        lastName: player.lastName,
+    const result = computeStartLevel(player.answers);
+
+    const existing = await prisma.user.findFirst({ where: { firstName: firstName!, lastName } });
+    if (existing) continue;
+
+    await prisma.user.create({
+      data: {
+        firstName: firstName!,
+        lastName,
         city: 'Тбилиси',
-        level: toLevelDecimal(startLevel),
-        startLevel: toLevelDecimal(startLevel),
+        level: toLevelDecimal(result.level),
+        startLevel: toLevelDecimal(result.level),
         // Голая самооценка, БЕЗ надбавок за опыт: это разные величины,
         // и путать их нельзя — на их расхождении строится анализ сэндбэггинга.
-        selfAssessedLevel: toLevelDecimal(computeSelfAssessedLevel(player.answers)),
+        selfAssessedLevel: toLevelDecimal(result.selfAssessedLevel),
         onboardingAnswers: toJson(player.answers),
+        startLevelBreakdown: toJson(result),
+        selfAssessmentInflated: result.selfAssessmentInflated,
+        onboardingCompletedAt: new Date(0),
         reliabilityBase: toLevelDecimal(initialReliability()),
         reliability: toLevelDecimal(initialReliability()),
       },

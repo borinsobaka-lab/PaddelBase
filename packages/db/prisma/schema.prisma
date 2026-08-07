@@ -35,7 +35,9 @@ model User {
   telegramId String? @unique
   phone      String? @unique
   firstName  String
-  lastName   String
+  /// Необязательна: у части игроков одно имя, а на этапе тестирования вход
+  /// делается по одному полю.
+  lastName   String?
   avatarUrl  String?
   city       String?
   role       Role    @default(PLAYER)
@@ -55,13 +57,25 @@ model User {
   /// Ответы анкеты целиком: позволяют пересчитать и саму формулу стартового уровня.
   onboardingAnswers Json?
 
+  /// Полная раскладка расчёта стартового уровня: технический балл, опыт, база,
+  /// применённые поправки. Нужна для перекалибровки весов анкеты на реальных
+  /// данных и для разбора спорных случаев.
+  startLevelBreakdown Json?
+
+  /// Самооценка оказалась заметно выше расчётной базы. Отдельная колонка, а не
+  /// поле внутри JSON, потому что по ней строится антисэндбэггинг-выборка.
+  selfAssessmentInflated Boolean @default(false)
+
+  /// Пока не заполнена, игроку показывается анкета вместо приложения.
+  onboardingCompletedAt DateTime?
+
   /// Надёжность на момент последнего рейтингового события.
   /// Текущее значение — чистая функция от (reliabilityBase, lastRatedMatchAt, now).
-  reliabilityBase Decimal @db.Decimal(4, 3) @default(0.050)
+  reliabilityBase Decimal @db.Decimal(4, 3) @default(0.200)
 
   /// Материализованная текущая надёжность: только для сортировок и фильтров.
   /// Источник истины — reliabilityBase; расхождение не влияет на расчёты.
-  reliability Decimal @db.Decimal(4, 3) @default(0.050)
+  reliability Decimal @db.Decimal(4, 3) @default(0.200)
 
   ratedMatchesCount Int       @default(0)
   lastRatedMatchAt  DateTime?
@@ -89,6 +103,7 @@ model User {
   notifications          Notification[]
 
   @@index([level])
+  @@index([firstName])
   @@map("users")
   @@schema("app")
 }

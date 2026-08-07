@@ -11,7 +11,7 @@
  * Версия конфига. Пишется в каждый RatingEvent (ТЗ §3.10), чтобы можно было
  * отличить события, посчитанные по разным наборам коэффициентов.
  */
-export const RATING_CONFIG_VERSION = '1.1.0';
+export const RATING_CONFIG_VERSION = '1.2.0';
 
 export type MatchFormat = 'match' | 'americano' | 'mexicano' | 'teamTournament';
 export type MatchDuration = 'oneSet' | 'twoSets' | 'threeSets';
@@ -39,6 +39,16 @@ export interface RatingConfig {
   K_MAX: number;
   /** Число рейтинговых матчей до полной надёжности. */
   N_FULL: number;
+  /**
+   * Надёжность сразу после анкеты.
+   *
+   * ТЗ §6 задавало 0.05. Принято 0.20: анкета из десяти вопросов с
+   * поведенческими якорями несёт заметно больше информации, чем «один матч»,
+   * и при 0.05 первый же результат швырял бы уровень на максимальный шаг.
+   * Ориентир — Playtomic: очная оценка тренером даёт 50 %, неверифицированная
+   * анкета должна давать заметно меньше.
+   */
+  INITIAL_RELIABILITY: number;
   /** Порог «уровень подтверждён». */
   RELIABLE_THRESHOLD: number;
   /** Ниже этого значения надёжность не опускается при затухании. */
@@ -81,6 +91,7 @@ export const RATING_CONFIG: RatingConfig = {
   K_MIN: envNumber('RATING_K_MIN', 0.06),
   K_MAX: envNumber('RATING_K_MAX', 0.4),
   N_FULL: envNumber('RATING_N_FULL', 20),
+  INITIAL_RELIABILITY: envNumber('RATING_INITIAL_RELIABILITY', 0.2),
   RELIABLE_THRESHOLD: envNumber('RATING_RELIABLE_THRESHOLD', 0.6),
   RELIABILITY_FLOOR: envNumber('RATING_RELIABILITY_FLOOR', 0.3),
   DECAY_START_DAYS: envNumber('RATING_DECAY_START_DAYS', 60),
