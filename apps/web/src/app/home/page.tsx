@@ -4,11 +4,10 @@ import { effectiveReliability, formatLevel } from '@paddelbase/rating';
 import Link from 'next/link';
 
 import { AppShell } from '@/components/AppShell';
-import { CreateButton } from '@/components/CreateButton';
 import { LevelStrip } from '@/components/LevelStrip';
 import { MatchCard } from '@/components/MatchCard';
 import { TournamentCard } from '@/components/TournamentCard';
-import { Button, EmptyState, MoreLink, Panel } from '@/components/ui';
+import { Button, EmptyState, MoreLink, Panel, ScreenTail } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 
 /**
@@ -52,10 +51,11 @@ export default async function HomePage({
   const upcoming = myMatches.filter((match) => match.needsAction === null);
 
   return (
-    <AppShell fab={<CreateButton />}>
-      {/* Разрыв между плашками — это и есть граница смысла. 12 px серого
-          между белыми блоками читаются лучше, чем заголовок на сером фоне. */}
-      <main className="flex flex-col gap-3 pt-5">
+    <AppShell>
+      {/* Разрыв между плашками — это и есть граница смысла. Белое начинается
+          от самого верха экрана и продолжается до низа: серый здесь только
+          разделяет блоки, но не лежит под ними. */}
+      <main className="screen">
         <Greeting firstName={user.firstName} unread={unread} />
 
         {welcome ? (
@@ -142,6 +142,8 @@ export default async function HomePage({
             </div>
           ))}
         </Rail>
+
+        <ScreenTail />
       </main>
     </AppShell>
   );
@@ -154,7 +156,7 @@ export default async function HomePage({
  */
 function Greeting({ firstName, unread }: { firstName: string; unread: number }) {
   return (
-    <header className="bleed flex items-center justify-between gap-3 rounded-card bg-surface p-3">
+    <header className="bleed flex items-center justify-between gap-3 rounded-card bg-surface p-3 pt-[calc(12px+env(safe-area-inset-top))]">
       <Link href="/profile" className="pressable flex min-h-11 items-center gap-3">
         <span className="flex size-12 items-center justify-center rounded-full bg-sunken text-title font-bold text-text-secondary">
           {firstName[0]?.toUpperCase()}

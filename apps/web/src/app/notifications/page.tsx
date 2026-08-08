@@ -3,7 +3,7 @@ import { prisma } from '@paddelbase/db';
 import Link from 'next/link';
 
 import { AppShell } from '@/components/AppShell';
-import { BackLink, EmptyState, Panel } from '@/components/ui';
+import { EmptyState, Panel, ScreenTail, TopBar } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 import { formatDateTime } from '@/lib/format';
 
@@ -45,30 +45,28 @@ export default async function NotificationsPage() {
 
   return (
     <AppShell>
-      <main className="flex flex-col gap-3">
-        <BackLink href="/home" label="На главную" />
+      <main className="screen">
 
         {/* Заголовок и «прочитать всё» на одной строке: раньше кнопка во всю
             ширину стояла отдельным блоком и весила больше самого списка. */}
-        <header className="bleed flex items-end justify-between gap-3 rounded-card bg-surface px-4 pb-4 pt-5">
-          <div>
-            <h1 className="text-h1 font-extrabold">Уведомления</h1>
-            {unread > 0 ? (
-              <p className="mt-1 text-small text-text-secondary">Непрочитанных: {unread}</p>
-            ) : null}
-          </div>
-
-          {unread > 0 ? (
-            <form action={markAllRead}>
-              <button
-                type="submit"
-                className="pressable -mb-2 -mr-2 min-h-11 px-2 text-body font-medium text-accent"
-              >
-                Прочитать всё
-              </button>
-            </form>
-          ) : null}
-        </header>
+        <TopBar
+          back="/home"
+          {...(unread > 0 ? { subtitle: `Непрочитанных: ${unread}` } : {})}
+          action={
+            unread > 0 ? (
+              <form action={markAllRead}>
+                <button
+                  type="submit"
+                  className="pressable -mb-2 -mr-2 min-h-11 shrink-0 px-2 text-body font-medium text-accent"
+                >
+                  Прочитать всё
+                </button>
+              </form>
+            ) : null
+          }
+        >
+          Уведомления
+        </TopBar>
 
         {notifications.length === 0 ? (
           <EmptyState
@@ -127,6 +125,7 @@ export default async function NotificationsPage() {
             </ul>
           </Panel>
         )}
+        <ScreenTail />
       </main>
     </AppShell>
   );

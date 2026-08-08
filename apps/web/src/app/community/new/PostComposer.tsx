@@ -3,7 +3,7 @@
 import type { MediaItem } from '@paddelbase/core';
 import { useActionState, useRef, useState } from 'react';
 
-import { BackLink, Button, Card, ErrorNote, PageTitle, StickyBar } from '@/components/ui';
+import { Button, Card, ErrorNote, StickyBar , ScreenTail, TopBar } from '@/components/ui';
 
 import { publish, type CommunityActionState } from '../actions';
 
@@ -109,10 +109,9 @@ export function PostComposer() {
   }
 
   return (
-    <main className="pb-4">
-      <BackLink href="/community" />
+    <main className="screen">
 
-      <PageTitle>Новый пост</PageTitle>
+      <TopBar back="/community">Новый пост</TopBar>
 
       <form action={formAction} className="flex flex-col gap-4">
         <input type="hidden" name="media" value={JSON.stringify(media.map(({ localId, ...rest }) => rest))} />
@@ -213,6 +212,7 @@ export function PostComposer() {
           </Button>
         </StickyBar>
       </form>
+      <ScreenTail />
     </main>
   );
 }

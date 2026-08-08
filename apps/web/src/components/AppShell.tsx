@@ -5,15 +5,13 @@ import { BottomNav } from './BottomNav';
 /**
  * Каркас экранов с нижней навигацией.
  *
- * Отступ снизу считается здесь, а не на каждом экране: плавающая кнопка стоит
- * над панелью, и если про неё забыть, она накроет последнюю карточку списка.
- * Раньше так и было.
+ * Отступ снизу один на всё приложение и равен высоте панели: кнопка создания
+ * переехала в саму панель, и компенсировать плавающий элемент больше не нужно.
  */
-export function AppShell({ children, fab }: { children: ReactNode; fab?: ReactNode }) {
+export function AppShell({ children }: { children: ReactNode }) {
   return (
     <>
-      <div className={fab ? 'pb-36' : 'pb-24'}>{children}</div>
-      {fab}
+      <div className="pb-[calc(72px+env(safe-area-inset-bottom))]">{children}</div>
       <BottomNav />
     </>
   );

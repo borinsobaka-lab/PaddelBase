@@ -5,19 +5,19 @@ import { useActionState, useState } from 'react';
 
 import { LevelChip } from '@/components/Badges';
 import {
-  BackLink,
   Button,
   Card,
   CheckRow,
   ErrorNote,
   Field,
-  PageTitle,
   Segmented,
   SegmentedOption,
   Select,
   StickyBar,
   Textarea,
   TextInput,
+  ScreenTail,
+  TopBar,
 } from '@/components/ui';
 
 import { createMatchAction, type CreateMatchState } from './actions';
@@ -81,12 +81,11 @@ export function CreateMatchForm({
   }
 
   return (
-    <main className="pb-4">
-      <BackLink href="/home" />
+    <main className="screen">
 
-      <PageTitle subtitle="Заявка появится в общей ленте, и на неё смогут откликнуться другие игроки">
+      <TopBar back="/home" subtitle="Заявка появится в общей ленте, и на неё смогут откликнуться другие игроки">
         Новый матч
-      </PageTitle>
+      </TopBar>
 
       <form action={formAction} className="flex flex-col gap-5">
         <Card className="flex flex-col gap-3">
@@ -259,6 +258,7 @@ export function CreateMatchForm({
           </Button>
         </StickyBar>
       </form>
+      <ScreenTail />
     </main>
   );
 }

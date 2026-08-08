@@ -13,8 +13,10 @@ import { formatLevel, levelCategory } from '@paddelbase/rating';
  * строке рядом с диском, где её видно.
  */
 const SIZES = {
-  sm: { box: 60, stroke: 4, value: 'text-title', category: null },
-  lg: { box: 168, stroke: 8, value: 'text-hero', category: 'text-body' },
+  // Дуга — не декоративная обводка, а само сообщение: она отвечает, насколько
+  // цифре можно верить. Тонкая линия читалась как рамка вокруг числа.
+  sm: { box: 60, stroke: 7, value: 'text-title', category: null },
+  lg: { box: 168, stroke: 16, value: 'text-hero', category: 'text-body' },
 } as const;
 
 export function LevelDial({

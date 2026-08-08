@@ -3,19 +3,19 @@
 import { useActionState, useState } from 'react';
 
 import {
-  BackLink,
   Button,
   Card,
   ChoiceRow,
   ErrorNote,
   Field,
-  PageTitle,
   Segmented,
   SegmentedOption,
   Select,
   StickyBar,
   Textarea,
   TextInput,
+  ScreenTail,
+  TopBar,
 } from '@/components/ui';
 
 import { createTournamentAction, type CreateTournamentState } from './actions';
@@ -71,12 +71,11 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
   const restingPerRound = participants - playersPerRound;
 
   return (
-    <main className="pb-4">
-      <BackLink href="/games" />
+    <main className="screen">
 
-      <PageTitle subtitle="Сетка соберётся автоматически, вам останется вводить счёт по кортам">
+      <TopBar back="/games" subtitle="Сетка соберётся автоматически, вам останется вводить счёт по кортам">
         Новый турнир
-      </PageTitle>
+      </TopBar>
 
       <form action={formAction} className="flex flex-col gap-5">
         <Card className="flex flex-col gap-3">
@@ -242,6 +241,7 @@ export function CreateTournamentForm({ courts }: { courts: Court[] }) {
           </Button>
         </StickyBar>
       </form>
+      <ScreenTail />
     </main>
   );
 }

@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { AppShell } from '@/components/AppShell';
 import { PostCard } from '@/components/PostCard';
-import { Button, EmptyState, PageTitle, Panel } from '@/components/ui';
+import { Button, EmptyState, Panel, ScreenTail, TopBar } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 
 export default async function CommunityPage({
@@ -22,9 +22,20 @@ export default async function CommunityPage({
   });
 
   return (
-    <AppShell fab={<WriteButton />}>
-      <main className="flex flex-col gap-3 pt-5">
-        <PageTitle subtitle="Кто что ищет, кто где играл">Комьюнити</PageTitle>
+    <AppShell>
+      <main className="screen">
+        {/* Написать пост — действие этого раздела, а не всего приложения,
+            поэтому оно стоит рядом с его заголовком, а не в общей панели. */}
+        <TopBar
+          subtitle="Кто что ищет, кто где играл"
+          action={
+            <Link href="/community/new" className="shrink-0">
+              <Button className="!min-h-11 !w-auto px-4 text-body">Пост</Button>
+            </Link>
+          }
+        >
+          Комьюнити
+        </TopBar>
 
         {feed.posts.length === 0 ? (
           <EmptyState
@@ -53,22 +64,10 @@ export default async function CommunityPage({
             </Link>
           </div>
         ) : null}
+        <ScreenTail />
       </main>
     </AppShell>
   );
 }
 
 /** Та же плавающая кнопка, что и на главной, — только пишет пост. */
-function WriteButton() {
-  return (
-    <Link
-      href="/community/new"
-      className="pressable fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-1/2 z-fab flex min-h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-accent px-5 text-body font-semibold text-accent-ink shadow-float"
-    >
-      <span aria-hidden className="text-title leading-none">
-        +
-      </span>
-      Написать
-    </Link>
-  );
-}

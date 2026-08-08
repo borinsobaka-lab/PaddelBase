@@ -34,7 +34,7 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`rounded-card p-4 ${TONES[tone]} ${className}`}>{children}</div>
+    <div className={`bleed rounded-card p-4 ${TONES[tone]} ${className}`}>{children}</div>
   );
 }
 
@@ -162,7 +162,7 @@ export function SegmentedOption({
 }: ComponentProps<'input'> & { label: ReactNode; compact?: boolean }) {
   return (
     <label
-      className={`pressable flex min-h-11 cursor-pointer items-center justify-center rounded-chip px-1 text-center font-medium text-text-secondary transition-colors has-checked:bg-surface has-checked:text-text ${
+      className={`pressable flex min-h-11 cursor-pointer items-center justify-center rounded-chip px-1 text-center font-medium text-text-secondary transition-colors has-checked:bg-surface has-checked:font-semibold has-checked:text-text ${
         compact ? 'text-small' : 'text-body'
       }`}
     >
@@ -183,7 +183,7 @@ export function ChoiceRow({
   ...props
 }: ComponentProps<'input'> & { label: ReactNode }) {
   return (
-    <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-control border border-border bg-surface p-3 text-body transition-colors has-checked:border-accent has-checked:bg-accent-soft">
+    <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-control bg-sunken p-3 text-body transition-colors has-checked:bg-accent-soft has-checked:ring-2 has-checked:ring-accent">
       <input
         type={type}
         className="mt-px size-4 shrink-0 accent-[var(--color-accent)]"
@@ -265,55 +265,73 @@ export function InfoNote({ children }: { children: ReactNode }) {
 }
 
 /**
- * Заголовок экрана.
+ * Верхняя плашка экрана.
  *
- * Тоже на белой плашке: серый в этой стилистике — разрыв между блоками, а не
- * основа, на которой лежит текст. Заголовок на голом сером переворачивал
- * отношение и делал серый фоном приложения.
+ * Белое начинается от самого верха: серая полоса над заголовком превращала бы
+ * серый обратно в фон приложения, а он здесь — только разрыв между блоками.
+ * Верхние углы прямые по той же причине, и отступ сверху учитывает вырез.
+ *
+ * Сюда же переехала стрелка назад. Раньше она была отдельной круглой целью на
+ * сером — то есть ещё одним блоком до первого блока.
  */
-export function PageTitle({ children, subtitle }: { children: ReactNode; subtitle?: string }) {
+export function TopBar({
+  children,
+  subtitle,
+  back,
+  action,
+}: {
+  children: ReactNode;
+  subtitle?: string;
+  /** Куда ведёт стрелка назад. Без неё стрелки нет. */
+  back?: string;
+  /** Действие справа от заголовка. */
+  action?: ReactNode;
+}) {
   return (
-    <header className="bleed rounded-card bg-surface px-4 pb-4 pt-5">
-      <h1 className="text-h1 font-extrabold">{children}</h1>
-      {subtitle ? (
-        <p className="mt-1 max-w-[42ch] text-small text-text-secondary">{subtitle}</p>
+    <header className="bleed rounded-card bg-surface px-4 pb-4 pt-[calc(20px+env(safe-area-inset-top))]">
+      {back ? (
+        <Link
+          href={back}
+          aria-label="Назад"
+          className="pressable -ml-2 mb-1 inline-flex size-11 items-center justify-center rounded-full text-text-secondary hover:bg-sunken"
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </Link>
       ) : null}
+
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-h1 font-extrabold">{children}</h1>
+          {subtitle ? (
+            <p className="mt-1 max-w-[42ch] text-small text-text-secondary">{subtitle}</p>
+          ) : null}
+        </div>
+        {action}
+      </div>
     </header>
   );
 }
 
 /**
- * Возврат назад.
- *
- * Стрелка в тексте («← Назад») выглядит как строка, а не как кнопка, и по ней
- * промахиваются: у неё нет ни площади, ни очертания. Здесь это круглая цель
- * в 44 px на той же поверхности, что и остальные элементы управления.
+ * Белый хвост экрана: последняя плашка продолжается до нижнего края.
+ * Ставится последним элементом внутри `.screen`.
  */
-export function BackLink({ href, label = 'Назад' }: { href: string; label?: string }) {
-  return (
-    <div className="pt-4">
-      <Link
-        href={href}
-        aria-label={label}
-        className="pressable inline-flex size-11 items-center justify-center rounded-full bg-surface text-text-secondary"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <path d="m15 18-6-6 6-6" />
-        </svg>
-      </Link>
-    </div>
-  );
+export function ScreenTail() {
+  return <div className="screen-tail" aria-hidden />;
 }
+
 
 /**
  * Прилипшая снизу панель отправки.

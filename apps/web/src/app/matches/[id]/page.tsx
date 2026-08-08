@@ -10,7 +10,7 @@ import { notFound } from 'next/navigation';
 
 import { LevelChip } from '@/components/Badges';
 import { CourtLineup } from '@/components/CourtLineup';
-import { BackLink, Card, SectionHeader } from '@/components/ui';
+import { Card, SectionHeader , ScreenTail, TopBar } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 import {
   MATCH_STATUS_NAMES,
@@ -54,8 +54,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
     !enteredByMe;
 
   return (
-    <main className="flex flex-col gap-5 pb-10">
-      <BackLink href="/home" />
+    <main className="screen">
 
       {/* Шапка стоит на холсте, а не в карточке: это заголовок экрана, а не
           один из его блоков. Карточка вокруг заголовка уравнивала его с
@@ -221,6 +220,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
       {isPlayer ? (
         <LeavePanel matchId={match.id} isCreator={isCreator} status={match.status} />
       ) : null}
+      <ScreenTail />
     </main>
   );
 }

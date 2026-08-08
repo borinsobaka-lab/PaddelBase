@@ -8,7 +8,7 @@ import {
 import { prisma, toNumber } from '@paddelbase/db';
 import { notFound } from 'next/navigation';
 
-import { BackLink } from '@/components/ui';
+import { Panel, ScreenTail, TopBar } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 import { TOURNAMENT_FORMAT_NAMES, formatDay, formatTime } from '@/lib/format';
 
@@ -43,17 +43,15 @@ export default async function TournamentPage({ params }: { params: Promise<{ id:
   ]);
 
   return (
-    <main className="flex flex-col gap-4 pb-10">
-      <BackLink href="/games" />
+    <main className="screen">
 
       {/* Формат — имя турнира, время — то, по чему его узнают. Статус идёт
           третьей строкой и обычным весом: он меняется сам, и выделять его
           наравне с названием незачем. */}
-      <header className="pt-3">
-        <h1 className="text-h1 font-extrabold">
-          {TOURNAMENT_FORMAT_NAMES[tournament.format]}
-        </h1>
-        <p className="mt-1 text-body text-text-secondary">
+      <TopBar back="/games">{TOURNAMENT_FORMAT_NAMES[tournament.format]}</TopBar>
+
+      <Panel>
+        <p className="text-body text-text-secondary">
           <span className="figure">{formatTime(tournament.startsAt)}</span>
           {' · '}
           {formatDay(tournament.startsAt)} · {tournament.courtName}
@@ -69,7 +67,7 @@ export default async function TournamentPage({ params }: { params: Promise<{ id:
             </>
           )}
         </p>
-      </header>
+      </Panel>
 
       <TournamentTabs
         tournament={tournament}
@@ -84,6 +82,8 @@ export default async function TournamentPage({ params }: { params: Promise<{ id:
           level: toNumber(candidate.level),
         }))}
       />
+
+      <ScreenTail />
     </main>
   );
 }

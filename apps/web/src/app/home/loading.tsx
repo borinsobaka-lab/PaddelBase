@@ -10,7 +10,7 @@ import { AppShell } from '@/components/AppShell';
 export default function HomeLoading() {
   return (
     <AppShell>
-      <main className="flex animate-pulse flex-col gap-7 pt-5" aria-busy="true">
+      <main className="screen animate-pulse" aria-busy="true">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-full bg-sunken" />

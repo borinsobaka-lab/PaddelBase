@@ -3,7 +3,7 @@ import { prisma } from '@paddelbase/db';
 import { notFound } from 'next/navigation';
 
 import { PostCard } from '@/components/PostCard';
-import { BackLink } from '@/components/ui';
+import { ScreenTail, TopBar } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 
 import { CommentsPanel, ModerationPanel, ReportPanel } from './panels';
@@ -26,8 +26,9 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   const card = feed.posts.find((entry) => entry.id === id);
 
   return (
-    <main className="flex flex-col gap-5 pb-10">
-      <BackLink href="/community" label="К ленте" />
+    <main className="screen">
+      <TopBar back="/community">Пост</TopBar>
+
 
       {card ? <PostCard post={card} /> : null}
 
@@ -38,6 +39,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
       ) : (
         <ReportPanel postId={id} />
       )}
+      <ScreenTail />
     </main>
   );
 }

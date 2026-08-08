@@ -2,10 +2,9 @@ import { listOpenMatches, listOpenTournaments, type MatchCard as MatchCardData }
 import { prisma } from '@paddelbase/db';
 
 import { AppShell } from '@/components/AppShell';
-import { CreateButton } from '@/components/CreateButton';
 import { MatchCard } from '@/components/MatchCard';
 import { TournamentCard } from '@/components/TournamentCard';
-import { EmptyState, PageTitle, Panel } from '@/components/ui';
+import { EmptyState, Panel, ScreenTail, TopBar } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 import { formatDay } from '@/lib/format';
 
@@ -29,9 +28,9 @@ export default async function GamesPage() {
   const days = groupByDay(matches);
 
   return (
-    <AppShell fab={<CreateButton />}>
-      <main className="flex flex-col gap-3 pt-5">
-        <PageTitle subtitle="Свободные места в матчах и открытые турниры">Игры</PageTitle>
+    <AppShell>
+      <main className="screen">
+        <TopBar subtitle="Свободные места в матчах и открытые турниры">Игры</TopBar>
 
         {matches.length === 0 && tournaments.length === 0 ? (
           <EmptyState
@@ -63,6 +62,8 @@ export default async function GamesPage() {
             </div>
           </Panel>
         ) : null}
+
+        <ScreenTail />
       </main>
     </AppShell>
   );

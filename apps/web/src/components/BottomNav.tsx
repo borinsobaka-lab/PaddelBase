@@ -2,56 +2,122 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
-/** Нижняя панель на четыре пункта (ТЗ §5.7). */
-const ITEMS = [
+import { Sheet } from './Sheet';
+
+/**
+ * Нижняя панель (ТЗ §5.7).
+ *
+ * Создание живёт здесь, в центре, а не плавающей кнопкой над содержимым.
+ * Плавающая кнопка закрывала собой последнюю карточку списка, требовала
+ * компенсирующего отступа снизу на каждом экране и в каждом разделе оказывалась
+ * в новом месте. В панели она всегда на одном месте и ничего не перекрывает.
+ */
+const LEFT = [
   { href: '/home', label: 'Главная', icon: HomeIcon },
   { href: '/games', label: 'Игры', icon: GamesIcon },
+] as const;
+
+const RIGHT = [
   { href: '/community', label: 'Комьюнити', icon: CommunityIcon },
   { href: '/profile', label: 'Профиль', icon: ProfileIcon },
 ] as const;
 
 export function BottomNav() {
   const pathname = usePathname();
+  const [creating, setCreating] = useState(false);
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-nav border-t border-border bg-surface/92 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-      <ul className="mx-auto flex w-full max-w-[430px]">
-        {ITEMS.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          const Icon = item.icon;
+    <>
+      <nav className="fixed inset-x-0 bottom-0 z-nav border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]">
+        <ul className="mx-auto flex w-full max-w-[430px] items-center">
+          {LEFT.map((item) => (
+            <NavItem key={item.href} item={item} pathname={pathname} />
+          ))}
 
-          return (
-            <li key={item.href} className="flex-1">
-              <Link
-                href={item.href}
-                /**
-                 * Полная предзагрузка всех четырёх разделов.
-                 *
-                 * По умолчанию Next тянет для динамического маршрута только
-                 * его loading-границу, то есть скелет: переход всё равно ждёт
-                 * сервер. `prefetch` берёт готовый экран целиком, и первое же
-                 * переключение вкладки происходит без запроса.
-                 *
-                 * Панель видна всегда, поэтому предзагрузка стартует сразу
-                 * после открытия любого экрана. Это четыре лишних рендера на
-                 * первую загрузку — плата за то, что дальше приложение
-                 * переключается без ожидания.
-                 */
-                prefetch
-                aria-current={active ? 'page' : undefined}
-                className={`pressable flex min-h-14 flex-col items-center justify-center gap-1 text-caption font-medium ${
-                  active ? 'text-accent' : 'text-muted'
-                }`}
+          <li className="flex flex-1 justify-center">
+            <button
+              type="button"
+              onClick={() => setCreating(true)}
+              aria-label="Создать матч или турнир"
+              className="pressable flex size-12 items-center justify-center rounded-full bg-accent text-accent-ink"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                aria-hidden
               >
-                <Icon />
-                {item.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+          </li>
+
+          {RIGHT.map((item) => (
+            <NavItem key={item.href} item={item} pathname={pathname} />
+          ))}
+        </ul>
+      </nav>
+
+      <Sheet open={creating} onClose={() => setCreating(false)} title="Что создаём?">
+        <div className="flex flex-col gap-2">
+          <Link
+            href="/matches/new"
+            onClick={() => setCreating(false)}
+            className="pressable flex min-h-14 items-center justify-center rounded-control bg-accent text-title font-semibold text-accent-ink"
+          >
+            Матч 2 × 2
+          </Link>
+          <Link
+            href="/tournaments/new"
+            onClick={() => setCreating(false)}
+            className="pressable flex min-h-14 items-center justify-center rounded-control bg-sunken text-title font-semibold"
+          >
+            Турнир
+          </Link>
+        </div>
+      </Sheet>
+    </>
+  );
+}
+
+function NavItem({
+  item,
+  pathname,
+}: {
+  item: { href: string; label: string; icon: () => React.ReactElement };
+  pathname: string;
+}) {
+  const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+  const Icon = item.icon;
+
+  return (
+    <li className="flex-1">
+      <Link
+        href={item.href}
+        /**
+         * Полная предзагрузка всех четырёх разделов.
+         *
+         * По умолчанию Next тянет для динамического маршрута только его
+         * loading-границу, то есть скелет: переход всё равно ждёт сервер.
+         * `prefetch` берёт готовый экран целиком, и первое же переключение
+         * вкладки происходит без запроса.
+         */
+        prefetch
+        aria-current={active ? 'page' : undefined}
+        className={`pressable flex min-h-14 flex-col items-center justify-center gap-1 text-caption font-medium ${
+          active ? 'text-accent' : 'text-muted'
+        }`}
+      >
+        <Icon />
+        {item.label}
+      </Link>
+    </li>
   );
 }
 

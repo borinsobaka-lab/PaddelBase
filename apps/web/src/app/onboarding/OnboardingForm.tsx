@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from 'react';
 
-import { Button, ChoiceRow, ErrorNote, PageTitle, StickyBar } from '@/components/ui';
+import { Button, ChoiceRow, ErrorNote, StickyBar, TopBar } from '@/components/ui';
 import { QUESTIONS } from '@/lib/questionnaire';
 
 import { submitOnboarding, type OnboardingFormState } from './actions';
@@ -19,10 +19,8 @@ export function OnboardingForm() {
   const complete = done === total;
 
   return (
-    <main className="pb-4">
-      <PageTitle subtitle="Десять вопросов, чтобы определить стартовый уровень. Отвечайте честно: заниженный ответ всё равно раскроется за первые матчи, а завышенный испортит подбор соперников.">
-        Ваш уровень
-      </PageTitle>
+    <main className="screen">
+      <TopBar subtitle="Десять вопросов, чтобы определить стартовый уровень. Отвечайте честно: заниженный ответ всё равно раскроется за первые матчи, а завышенный испортит подбор соперников.">Ваш уровень</TopBar>
 
       {/* Полоса прогресса прилипает к верху: анкета длинная, и на пятом вопросе
           важно видеть, что осталось немного. Раньше об этом говорила только

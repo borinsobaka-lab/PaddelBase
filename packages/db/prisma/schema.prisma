@@ -83,6 +83,29 @@ model User {
   /// Балл активности. В MVP заглушка, всегда 0 (ТЗ §5.1).
   activityScore Int @default(0)
 
+  // --- Предпочтения в игре ---
+  //
+  // Заполнять необязательно: пустое поле означает «не указано», а не «всё
+  // равно». Разница важна — по «не указано» подбор не фильтрует, а «любая
+  // рука» это осознанный ответ.
+
+  /// Рабочая рука.
+  dominantHand Hand?
+
+  /// Сторона корта. В падел это устойчивая роль пары, а не мелочь: игрок
+  /// слева и игрок справа делают на корте разное.
+  courtSide CourtSide?
+
+  /// Какие матчи интересны: рейтинговые, любительские или любые.
+  matchPreference MatchPreference?
+
+  /// Удобное время суток. Пустой массив — не указано.
+  preferredTimes DayTime[] @default([])
+
+  /// Удобные дни недели, 1 — понедельник, 7 — воскресенье. Числами, а не
+  /// перечислением: с ними тривиально считать пересечения при подборе.
+  preferredDays Int[] @default([])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -105,6 +128,38 @@ model User {
   @@index([level])
   @@index([firstName])
   @@map("users")
+  @@schema("app")
+}
+
+enum Hand {
+  RIGHT
+  LEFT
+  BOTH
+
+  @@schema("app")
+}
+
+enum CourtSide {
+  LEFT
+  RIGHT
+  ANY
+
+  @@schema("app")
+}
+
+enum MatchPreference {
+  RATED
+  CASUAL
+  ANY
+
+  @@schema("app")
+}
+
+enum DayTime {
+  MORNING
+  AFTERNOON
+  EVENING
+
   @@schema("app")
 }
 

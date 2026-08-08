@@ -226,6 +226,40 @@
   }
 
   /**
+   * Экран.
+   *
+   * Стопка плашек с серыми разрывами, и белое начинается от самого верха
+   * экрана: серая полоса над первой плашкой превращала бы серый обратно в
+   * фон приложения. Поэтому у первого блока верхние углы прямые, а у
+   * последнего — нижние, и белое уходит под нижнюю панель.
+   */
+  .screen {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .screen > :first-child {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+  }
+
+  /**
+   * Белый хвост экрана.
+   *
+   * Растягивается на остаток высоты и отменяет разрыв перед собой, поэтому
+   * последняя плашка продолжается до нижнего края без серой полосы. Когда
+   * содержимого много, хвост схлопывается в ноль.
+   */
+  .screen-tail {
+    margin-block-start: -12px;
+    margin-inline: -16px;
+    flex: 1 1 auto;
+    background-color: var(--color-surface);
+  }
+
+  /**
    * Выход за поля страницы.
    *
    * Белая плашка — смысловой блок, и он идёт от края до края: серому остаётся
@@ -284,6 +318,54 @@
   /* Дуга надёжности дорисовывается от нуля к своему значению: уровень
      буквально «набирается», и это единственная метафора, которую блок
      должен передать. */
+  /**
+   * Шторка снизу.
+   *
+   * Приходит из-за нижнего края — движение объясняет, откуда она взялась.
+   * Закрытие быстрее открытия: уход должен ощущаться решительнее прихода.
+   */
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes sheet-out {
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes backdrop-in {
+    from {
+      background-color: transparent;
+    }
+  }
+
+  @keyframes backdrop-out {
+    to {
+      background-color: transparent;
+    }
+  }
+
+  .sheet-in {
+    animation: sheet-in 320ms var(--ease-out-expo) both;
+  }
+
+  .sheet-out {
+    animation: sheet-out 220ms var(--ease-out) both;
+  }
+
+  .sheet-backdrop-in {
+    background-color: oklch(0.205 0.006 264 / 0.4);
+    animation: backdrop-in 320ms var(--ease-out) both;
+  }
+
+  .sheet-backdrop-out {
+    background-color: oklch(0.205 0.006 264 / 0.4);
+    animation: backdrop-out 220ms var(--ease-out) both;
+  }
+
   @keyframes draw-arc {
     from {
       stroke-dashoffset: var(--arc-length);

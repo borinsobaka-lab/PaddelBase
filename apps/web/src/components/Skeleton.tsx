@@ -51,7 +51,7 @@ export function SkeletonRows({ rows = 5 }: { rows?: number }) {
 /** Обёртка: пульсация и метка для читалок с экрана. */
 export function SkeletonScreen({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex animate-pulse flex-col gap-6" aria-busy="true" aria-label="Загрузка">
+    <main className="screen animate-pulse" aria-busy="true" aria-label="Загрузка">
       {children}
     </main>
   );

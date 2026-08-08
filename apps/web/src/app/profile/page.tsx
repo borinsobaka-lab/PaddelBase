@@ -5,10 +5,11 @@ import Link from 'next/link';
 
 import { AppShell } from '@/components/AppShell';
 import { RatingBlock } from '@/components/RatingBlock';
-import { Button, EmptyState, Panel } from '@/components/ui';
+import { Button, EmptyState, Panel, ScreenTail } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 import { formatDay } from '@/lib/format';
 
+import { PreferencesForm } from './PreferencesForm';
 import { signOut } from './actions';
 
 export default async function ProfilePage() {
@@ -31,9 +32,9 @@ export default async function ProfilePage() {
 
   return (
     <AppShell>
-      <main className="flex flex-col gap-3 pt-5">
+      <main className="screen">
         <Panel>
-          <header className="flex items-center gap-4">
+          <header className="flex items-center gap-4 pt-[env(safe-area-inset-top)]">
             <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-sunken text-h2 font-bold text-text-secondary">
               {name[0]?.toUpperCase()}
             </span>
@@ -71,6 +72,16 @@ export default async function ProfilePage() {
             </dl>
           </div>
         </Panel>
+
+        <PreferencesForm
+          initial={{
+            dominantHand: user.dominantHand,
+            courtSide: user.courtSide,
+            matchPreference: user.matchPreference,
+            preferredTimes: user.preferredTimes,
+            preferredDays: user.preferredDays,
+          }}
+        />
 
         <Panel title="История матчей">
           {history.length === 0 ? (
@@ -129,6 +140,7 @@ export default async function ProfilePage() {
             Выйти
           </Button>
         </form>
+        <ScreenTail />
       </main>
     </AppShell>
   );
