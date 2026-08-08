@@ -33,11 +33,11 @@ export default async function ProfilePage() {
     <AppShell>
       <main className="flex flex-col gap-6 pt-5">
         <header className="flex items-center gap-4">
-          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-sunken text-h2 font-semibold text-text-secondary">
+          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-sunken text-h2 font-bold text-text-secondary">
             {name[0]?.toUpperCase()}
           </span>
           <div className="min-w-0">
-            <h1 className="truncate text-h2 font-semibold leading-tight">{name}</h1>
+            <h1 className="truncate text-h2 font-extrabold leading-tight">{name}</h1>
             <p className="text-small text-muted">{user.city ?? 'Грузия'}</p>
           </div>
         </header>
@@ -139,7 +139,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <dt className="label">{label}</dt>
-      <dd className="figure mt-1 text-h2 font-semibold leading-none">{value}</dd>
+      <dd className="figure mt-1 text-h1 font-extrabold leading-none">{value}</dd>
     </div>
   );
 }

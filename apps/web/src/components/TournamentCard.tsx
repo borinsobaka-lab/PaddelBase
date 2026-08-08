@@ -15,11 +15,11 @@ export function TournamentCard({ tournament }: { tournament: TournamentCardData 
   return (
     <Link
       href={`/tournaments/${tournament.id}`}
-      className="pressable block rounded-card bg-surface p-4 shadow-raise hover:shadow-lift"
+      className="pressable block rounded-card bg-surface p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-body font-semibold leading-tight">
+          <p className="text-title font-bold leading-tight">
             <span className="figure">{formatTime(tournament.startsAt)}</span>
             <span className="ml-2 font-normal text-text-secondary">
               {formatDay(tournament.startsAt)}

@@ -28,7 +28,7 @@ export function LevelStrip({
   return (
     <Link
       href="/profile"
-      className="pressable flex items-center gap-4 rounded-card bg-surface p-4 shadow-raise hover:shadow-lift"
+      className="pressable flex items-center gap-4 rounded-card bg-surface p-4"
     >
       <LevelDial level={level} reliability={reliability} />
 
@@ -39,7 +39,7 @@ export function LevelStrip({
         <p className="label">
           Ваш уровень · <span className="figure">{levelCategory(level)}</span>
         </p>
-        <p className="mt-1 text-body font-medium leading-snug">
+        <p className="mt-1 text-body font-bold leading-snug">
           {unrated
             ? 'Пока не подтверждён'
             : calibrated

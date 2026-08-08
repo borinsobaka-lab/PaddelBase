@@ -44,7 +44,7 @@ export function CreateButton() {
               </Link>
               <Link
                 href="/tournaments/new"
-                className="pressable flex min-h-12 items-center justify-center rounded-control bg-surface text-body font-medium shadow-raise"
+                className="pressable flex min-h-12 items-center justify-center rounded-control bg-surface text-body font-medium"
               >
                 Турнир
               </Link>

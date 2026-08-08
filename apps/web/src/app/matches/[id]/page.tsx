@@ -64,7 +64,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         {/* Тот же порядок, что и в карточке ленты: время ведёт, день идёт
             следом. Игрок узнаёт матч по времени, и переучивать его на
             детальном экране незачем. */}
-        <h1 className="text-h1 font-semibold leading-tight">
+        <h1 className="text-h1 font-extrabold">
           <span className="figure">{formatTime(match.startsAt)}</span>
           <span className="ml-2 text-h2 font-normal text-text-secondary">
             {formatDay(match.startsAt)}

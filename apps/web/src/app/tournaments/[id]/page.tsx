@@ -50,7 +50,7 @@ export default async function TournamentPage({ params }: { params: Promise<{ id:
           третьей строкой и обычным весом: он меняется сам, и выделять его
           наравне с названием незачем. */}
       <header className="pt-3">
-        <h1 className="text-h1 font-semibold leading-tight">
+        <h1 className="text-h1 font-extrabold">
           {TOURNAMENT_FORMAT_NAMES[tournament.format]}
         </h1>
         <p className="mt-1 text-body text-text-secondary">

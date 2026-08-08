@@ -4,11 +4,13 @@ import type { ComponentProps, ReactNode } from 'react';
 /**
  * Примитивы интерфейса.
  *
- * Глубина одна на всё приложение: карточка стоит на кольце и мягкой тени, а не
- * на жёсткой границе. Граница остаётся там, где она разделяет — поля ввода,
- * разделители, пунктир свободного места. Смешивать две стратегии нельзя: как
- * только рядом окажутся карточка с рамкой и карточка с тенью, обе начнут
- * выглядеть случайными.
+ * Глубина держится заливками, а не тенями и не рамками: серый холст → белая
+ * карточка → серая плитка внутри карточки. Три ступени, каждая на пару
+ * процентов светлоты, и этого достаточно, чтобы структура читалась.
+ *
+ * Тень осталась ровно у двух элементов — кнопки создания и шторки, — которые
+ * буквально висят над произвольным содержимым. Это не вторая стратегия: всё,
+ * что лежит в потоке документа, теней не имеет вовсе.
  */
 
 export type Tone = 'default' | 'action' | 'warn' | 'accent';
@@ -32,7 +34,7 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`rounded-card p-4 shadow-raise ${TONES[tone]} ${className}`}>{children}</div>
+    <div className={`rounded-card p-4 ${TONES[tone]} ${className}`}>{children}</div>
   );
 }
 
@@ -41,13 +43,14 @@ export function Button({
   className = '',
   ...props
 }: ComponentProps<'button'> & { variant?: 'primary' | 'ghost' | 'quiet' }) {
-  // Все тапабельные элементы не меньше 44 px по высоте (ТЗ §9).
+  // 56 px, а не минимальные 44: главное действие экрана должно читаться как
+  // главное ещё до того, как прочитана надпись на нём.
   const base =
-    'pressable inline-flex min-h-11 w-full items-center justify-center rounded-control px-4 text-body font-medium disabled:pointer-events-none disabled:opacity-45';
+    'pressable inline-flex min-h-14 w-full items-center justify-center rounded-control px-5 text-title font-semibold disabled:pointer-events-none disabled:opacity-40';
 
   const styles = {
-    primary: 'bg-accent text-accent-ink shadow-raise hover:bg-accent/92',
-    ghost: 'bg-surface text-text shadow-raise hover:bg-sunken',
+    primary: 'bg-accent text-accent-ink hover:bg-accent/90',
+    ghost: 'bg-sunken text-text hover:bg-border',
     quiet: 'text-text-secondary hover:bg-sunken',
   }[variant];
 
@@ -159,7 +162,7 @@ export function SegmentedOption({
 }: ComponentProps<'input'> & { label: ReactNode; compact?: boolean }) {
   return (
     <label
-      className={`pressable flex min-h-11 cursor-pointer items-center justify-center rounded-chip px-1 text-center font-medium text-text-secondary transition-colors has-checked:bg-surface has-checked:text-text has-checked:shadow-raise ${
+      className={`pressable flex min-h-11 cursor-pointer items-center justify-center rounded-chip px-1 text-center font-medium text-text-secondary transition-colors has-checked:bg-surface has-checked:text-text ${
         compact ? 'text-small' : 'text-body'
       }`}
     >
@@ -212,6 +215,39 @@ export function CheckRow({
   );
 }
 
+/**
+ * Круглый значок с глифом.
+ *
+ * Опознавательный элемент этой стилистики: сплошной синий круг с белым
+ * штрихом внутри. Он маркирует раздел, а не действие, поэтому сам по себе
+ * никогда не бывает целью нажатия — нажимается плитка или строка целиком.
+ */
+export function IconBadge({
+  children,
+  tone = 'accent',
+  size = 'md',
+}: {
+  children: ReactNode;
+  tone?: 'accent' | 'sunken' | 'ball';
+  size?: 'sm' | 'md';
+}) {
+  const tones = {
+    accent: 'bg-accent text-accent-ink',
+    sunken: 'bg-sunken text-text-secondary',
+    ball: 'bg-ball text-ball-ink',
+  }[tone];
+  const box = size === 'sm' ? 'size-9' : 'size-11';
+
+  return (
+    <span
+      aria-hidden
+      className={`flex ${box} shrink-0 items-center justify-center rounded-full ${tones}`}
+    >
+      {children}
+    </span>
+  );
+}
+
 /** Сообщение об ошибке говорит, что произошло и что делать (ТЗ §9). */
 export function ErrorNote({ children }: { children: ReactNode }) {
   return (
@@ -231,7 +267,7 @@ export function InfoNote({ children }: { children: ReactNode }) {
 export function PageTitle({ children, subtitle }: { children: ReactNode; subtitle?: string }) {
   return (
     <header className="pb-5 pt-7">
-      <h1 className="text-h1 font-semibold leading-tight">{children}</h1>
+      <h1 className="text-h1 font-extrabold">{children}</h1>
       {subtitle ? <p className="mt-1 max-w-[42ch] text-small text-text-secondary">{subtitle}</p> : null}
     </header>
   );
@@ -250,7 +286,7 @@ export function BackLink({ href, label = 'Назад' }: { href: string; label?:
       <Link
         href={href}
         aria-label={label}
-        className="pressable inline-flex size-11 items-center justify-center rounded-full bg-surface text-text-secondary shadow-raise"
+        className="pressable inline-flex size-11 items-center justify-center rounded-full bg-surface text-text-secondary"
       >
         <svg
           width="20"
@@ -305,7 +341,7 @@ export function SectionHeader({
 }) {
   return (
     <div className="flex min-h-7 items-center justify-between gap-3">
-      <h2 className="text-title font-semibold leading-tight">{children}</h2>
+      <h2 className="text-h2 font-bold">{children}</h2>
       {action}
     </div>
   );

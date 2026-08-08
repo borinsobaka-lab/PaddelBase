@@ -40,7 +40,7 @@ export function MatchCard({
       href={`/matches/${match.id}`}
       className={`pressable block rounded-card ${
         action ? 'bg-ball-soft' : 'bg-surface'
-      } ${focus ? 'p-4' : 'p-4'} shadow-raise hover:shadow-lift`}
+      } ${focus ? 'p-4' : 'p-4'}`}
     >
       {action ? (
         <p className="mb-2 inline-flex items-center gap-1.5 rounded-chip bg-ball px-2 py-1 text-caption font-semibold uppercase tracking-wide text-ball-ink">
@@ -50,7 +50,7 @@ export function MatchCard({
 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className={`font-semibold ${focus ? 'text-h2' : 'text-body'} leading-tight`}>
+          <p className={`font-bold ${focus ? 'text-h2' : 'text-title'} leading-tight`}>
             <span className="figure">{formatTime(match.startsAt)}</span>
             {showDay ? (
               <span className="ml-2 font-normal text-text-secondary">

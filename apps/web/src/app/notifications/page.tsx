@@ -52,7 +52,7 @@ export default async function NotificationsPage() {
             ширину стояла отдельным блоком и весила больше самого списка. */}
         <header className="flex items-end justify-between gap-3 pb-1 pt-3">
           <div>
-            <h1 className="text-h1 font-semibold leading-tight">Уведомления</h1>
+            <h1 className="text-h1 font-extrabold">Уведомления</h1>
             {unread > 0 ? (
               <p className="mt-1 text-small text-text-secondary">Непрочитанных: {unread}</p>
             ) : null}
@@ -116,12 +116,12 @@ export default async function NotificationsPage() {
                   {href ? (
                     <Link
                       href={href}
-                      className="pressable block rounded-card bg-surface p-4 shadow-raise"
+                      className="pressable block rounded-card bg-surface p-4"
                     >
                       {content}
                     </Link>
                   ) : (
-                    <div className="rounded-card bg-surface p-4 shadow-raise">{content}</div>
+                    <div className="rounded-card bg-surface p-4">{content}</div>
                   )}
                 </li>
               );

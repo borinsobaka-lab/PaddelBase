@@ -81,7 +81,7 @@ export function TournamentTabs(props: TournamentViewProps) {
               onClick={() => setTab(item.id)}
               aria-current={tab === item.id ? 'true' : undefined}
               className={`pressable min-h-11 flex-1 rounded-chip text-body font-medium transition-colors ${
-                tab === item.id ? 'bg-surface text-text shadow-raise' : 'text-text-secondary'
+                tab === item.id ? 'bg-surface text-text font-semibold' : 'text-text-secondary'
               }`}
             >
               {item.label}

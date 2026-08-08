@@ -305,7 +305,7 @@ function StepButton({
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className="pressable flex size-11 items-center justify-center rounded-chip bg-surface text-title text-text-secondary shadow-raise disabled:opacity-35 disabled:shadow-none"
+      className="pressable flex size-11 items-center justify-center rounded-chip bg-surface text-title text-text-secondary disabled:opacity-35"
     >
       {children}
     </button>

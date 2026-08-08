@@ -151,11 +151,11 @@ function Greeting({ firstName, unread }: { firstName: string; unread: number }) 
   return (
     <header className="flex items-center justify-between gap-3">
       <Link href="/profile" className="pressable flex min-h-11 items-center gap-3">
-        <span className="flex size-10 items-center justify-center rounded-full bg-sunken text-body font-semibold text-text-secondary">
+        <span className="flex size-12 items-center justify-center rounded-full bg-sunken text-title font-bold text-text-secondary">
           {firstName[0]?.toUpperCase()}
         </span>
         <span>
-          <span className="block text-title font-semibold leading-tight">{firstName}</span>
+          <span className="block text-h2 font-extrabold leading-tight">{firstName}</span>
           <span className="block text-small text-muted">Профиль и история</span>
         </span>
       </Link>
@@ -163,7 +163,7 @@ function Greeting({ firstName, unread }: { firstName: string; unread: number }) 
       <Link
         href="/notifications"
         aria-label={unread > 0 ? `Уведомления, непрочитанных: ${unread}` : 'Уведомления'}
-        className="pressable relative flex size-11 items-center justify-center rounded-full bg-surface shadow-raise"
+        className="pressable relative flex size-11 items-center justify-center rounded-full bg-surface"
       >
         <BellIcon />
         {unread > 0 ? (
