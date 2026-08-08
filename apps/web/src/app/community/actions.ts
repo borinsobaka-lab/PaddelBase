@@ -15,6 +15,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { loadCurrentUser } from '@/lib/currentUser';
+import { revalidateFeedsAndNotifications } from '@/lib/revalidate';
 
 export interface CommunityActionState {
   error?: string;
@@ -65,6 +66,7 @@ export async function like(
       userId: await currentUserId(),
     });
     revalidatePath('/community');
+  revalidatePath('/notifications');
     return {};
   } catch (error: unknown) {
     return toState(error);
@@ -125,6 +127,7 @@ export async function moderate(
       await setPostHidden(prisma, { postId, adminId, hidden: formData.get('value') === 'on' });
     }
     revalidatePath('/community');
+  revalidatePath('/notifications');
     revalidatePath(`/community/${postId}`);
     return {};
   } catch (error: unknown) {

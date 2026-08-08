@@ -15,6 +15,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { loadCurrentUser } from '@/lib/currentUser';
+import { revalidateFeedsAndNotifications } from '@/lib/revalidate';
 
 export interface TournamentActionState {
   error?: string;
@@ -41,6 +42,7 @@ export async function join(
   try {
     await joinTournament(prisma, { tournamentId, userId: await currentUserId() });
     revalidatePath(`/tournaments/${tournamentId}`);
+  revalidateFeedsAndNotifications();
     return { notice: 'Вы записаны' };
   } catch (error: unknown) {
     return toState(error);
@@ -56,6 +58,7 @@ export async function leaveAction(
   try {
     await leaveTournament(prisma, { tournamentId, userId: await currentUserId() });
     revalidatePath(`/tournaments/${tournamentId}`);
+  revalidateFeedsAndNotifications();
     return { notice: 'Вы снялись с турнира' };
   } catch (error: unknown) {
     return toState(error);
@@ -78,6 +81,7 @@ export async function registerTeamAction(
         : { name: String(formData.get('teamName')).trim() }),
     });
     revalidatePath(`/tournaments/${tournamentId}`);
+  revalidateFeedsAndNotifications();
     return { notice: 'Команда заявлена' };
   } catch (error: unknown) {
     return toState(error);
@@ -97,6 +101,7 @@ export async function start(
       now: new Date(),
     });
     revalidatePath(`/tournaments/${tournamentId}`);
+  revalidateFeedsAndNotifications();
     return { notice: 'Турнир начался, сетка первого раунда готова' };
   } catch (error: unknown) {
     return toState(error);
@@ -117,6 +122,7 @@ export async function saveScore(
       scoreB: Number(formData.get('scoreB')),
     });
     revalidatePath(`/tournaments/${tournamentId}`);
+  revalidateFeedsAndNotifications();
     return {};
   } catch (error: unknown) {
     return toState(error);
@@ -137,6 +143,7 @@ export async function closeRoundAction(
       now: new Date(),
     });
     revalidatePath(`/tournaments/${tournamentId}`);
+  revalidateFeedsAndNotifications();
 
     return {
       notice:
@@ -162,6 +169,7 @@ export async function finish(
       now: new Date(),
     });
     revalidatePath(`/tournaments/${tournamentId}`);
+  revalidateFeedsAndNotifications();
 
     return {
       notice: result.ratingApplied

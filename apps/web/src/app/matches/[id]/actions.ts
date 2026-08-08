@@ -18,6 +18,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { loadCurrentUser } from '@/lib/currentUser';
+import { revalidateFeedsAndNotifications } from '@/lib/revalidate';
 
 export interface ActionState {
   error?: string;
@@ -52,6 +53,7 @@ export async function apply(_previous: ActionState, formData: FormData): Promise
       now: new Date(),
     });
     revalidatePath(`/matches/${matchId}`);
+  revalidateFeedsAndNotifications();
 
     return {
       notice: result.levelOutOfRange
@@ -73,6 +75,7 @@ export async function accept(_previous: ActionState, formData: FormData): Promis
       now: new Date(),
     });
     revalidatePath(`/matches/${matchId}`);
+  revalidateFeedsAndNotifications();
     return {};
   } catch (error: unknown) {
     return toState(error);
@@ -88,6 +91,7 @@ export async function reject(_previous: ActionState, formData: FormData): Promis
       creatorId: await currentUserId(),
     });
     revalidatePath(`/matches/${matchId}`);
+  revalidateFeedsAndNotifications();
     return {};
   } catch (error: unknown) {
     return toState(error);
@@ -150,6 +154,7 @@ export async function submitScore(
     });
 
     revalidatePath(`/matches/${matchId}`);
+  revalidateFeedsAndNotifications();
     return { notice: 'Счёт записан. Соперники подтвердят результат — после этого изменится рейтинг.' };
   } catch (error: unknown) {
     return toState(error);
@@ -169,6 +174,7 @@ export async function confirmScore(
       now: new Date(),
     });
     revalidatePath(`/matches/${matchId}`);
+  revalidateFeedsAndNotifications();
 
     return {
       notice: applied.applied ? 'Результат подтверждён, рейтинг обновлён' : 'Результат подтверждён',
@@ -191,6 +197,7 @@ export async function disputeScore(
       now: new Date(),
     });
     revalidatePath(`/matches/${matchId}`);
+  revalidateFeedsAndNotifications();
     return { notice: 'Результат оспорен. Рейтинг не изменится до ручного разбора.' };
   } catch (error: unknown) {
     return toState(error);

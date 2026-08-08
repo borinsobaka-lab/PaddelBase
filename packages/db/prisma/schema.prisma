@@ -127,6 +127,10 @@ model Court {
   matches     Match[]
   tournaments Tournament[]
 
+  // Пара «название + город» уникальна: два одинаковых клуба в одном городе —
+  // это ошибка данных, а не случай. Заодно справочник становится
+  // идемпотентным: и миграция, и сид кладут корты через ON CONFLICT.
+  @@unique([name, city])
   @@index([city, isActive])
   @@map("courts")
   @@schema("app")

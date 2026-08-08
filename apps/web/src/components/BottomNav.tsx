@@ -25,6 +25,20 @@ export function BottomNav() {
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
+                /**
+                 * Полная предзагрузка всех четырёх разделов.
+                 *
+                 * По умолчанию Next тянет для динамического маршрута только
+                 * его loading-границу, то есть скелет: переход всё равно ждёт
+                 * сервер. `prefetch` берёт готовый экран целиком, и первое же
+                 * переключение вкладки происходит без запроса.
+                 *
+                 * Панель видна всегда, поэтому предзагрузка стартует сразу
+                 * после открытия любого экрана. Это четыре лишних рендера на
+                 * первую загрузку — плата за то, что дальше приложение
+                 * переключается без ожидания.
+                 */
+                prefetch
                 aria-current={active ? 'page' : undefined}
                 className={`pressable flex min-h-14 flex-col items-center justify-center gap-1 text-caption font-medium ${
                   active ? 'text-accent' : 'text-muted'

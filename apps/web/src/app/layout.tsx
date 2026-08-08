@@ -20,19 +20,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru">
       <head>
-        {/* Кириллические подмножества грузятся на каждом экране — их стоит
+        {/* Кириллическое подмножество грузится на каждом экране — его стоит
             запросить сразу, а не после разбора CSS. Латиница и latin-ext
             подтянутся по мере надобности. */}
         <link
           rel="preload"
           href="/fonts/onest-cyrillic.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/fonts/jetbrains-mono-cyrillic.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"

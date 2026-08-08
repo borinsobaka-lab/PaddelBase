@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 
 import { loadCurrentUser } from '@/lib/currentUser';
 import { tbilisiLocalToUtc } from '@/lib/time';
+import { revalidateFeeds } from '@/lib/revalidate';
 
 export interface CreateMatchState {
   error?: string;
@@ -45,6 +46,7 @@ export async function createMatchAction(
     throw error;
   }
 
+  revalidateFeeds();
   redirect(`/matches/${matchId}`);
 }
 

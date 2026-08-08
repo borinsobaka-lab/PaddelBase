@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation';
 
 import { loadCurrentUser } from '@/lib/currentUser';
 import { tbilisiLocalToUtc } from '@/lib/time';
+import { revalidateFeeds } from '@/lib/revalidate';
 
 export interface CreateTournamentState {
   error?: string;
@@ -58,5 +59,6 @@ export async function createTournamentAction(
     throw error;
   }
 
+  revalidateFeeds();
   redirect(`/tournaments/${tournamentId}`);
 }
