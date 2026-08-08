@@ -264,11 +264,20 @@ export function InfoNote({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Заголовок экрана.
+ *
+ * Тоже на белой плашке: серый в этой стилистике — разрыв между блоками, а не
+ * основа, на которой лежит текст. Заголовок на голом сером переворачивал
+ * отношение и делал серый фоном приложения.
+ */
 export function PageTitle({ children, subtitle }: { children: ReactNode; subtitle?: string }) {
   return (
-    <header className="pb-5 pt-7">
+    <header className="rounded-card bg-surface px-4 pb-4 pt-5">
       <h1 className="text-h1 font-extrabold">{children}</h1>
-      {subtitle ? <p className="mt-1 max-w-[42ch] text-small text-text-secondary">{subtitle}</p> : null}
+      {subtitle ? (
+        <p className="mt-1 max-w-[42ch] text-small text-text-secondary">{subtitle}</p>
+      ) : null}
     </header>
   );
 }
@@ -323,6 +332,46 @@ export function StickyBar({ children }: { children: ReactNode }) {
       />
       {children}
     </div>
+  );
+}
+
+/**
+ * Плашка — смысловой блок целиком.
+ *
+ * Заголовок живёт ВНУТРИ плашки, а не над ней. Это и есть основной приём
+ * этой стилистики: экран собран из белых скруглённых блоков, разделённых
+ * серыми разрывами, и разрыв отделяет один смысл от другого. Заголовок,
+ * вынесенный на серый фон, разрывает блок пополам: подпись оказывается по
+ * одну сторону границы, а то, что она называет, — по другую.
+ *
+ * Отсюда же и цвет содержимого: внутри белой плашки строки и карточки
+ * серые. Белое на белом пришлось бы отделять тенью или рамкой, а глубина
+ * здесь держится только заливками.
+ */
+export function Panel({
+  title,
+  action,
+  children,
+  tone = 'default',
+  className = '',
+}: {
+  title?: ReactNode;
+  /** Ссылка «дальше» справа от заголовка. */
+  action?: ReactNode;
+  children: ReactNode;
+  tone?: Tone;
+  className?: string;
+}) {
+  return (
+    <section className={`rounded-card p-4 ${TONES[tone]} ${className}`}>
+      {title ? (
+        <header className="mb-3 flex min-h-8 items-center justify-between gap-3">
+          <h2 className="text-h2 font-bold">{title}</h2>
+          {action}
+        </header>
+      ) : null}
+      {children}
+    </section>
   );
 }
 

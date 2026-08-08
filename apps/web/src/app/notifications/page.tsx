@@ -3,7 +3,7 @@ import { prisma } from '@paddelbase/db';
 import Link from 'next/link';
 
 import { AppShell } from '@/components/AppShell';
-import { BackLink, EmptyState } from '@/components/ui';
+import { BackLink, EmptyState, Panel } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 import { formatDateTime } from '@/lib/format';
 
@@ -45,12 +45,12 @@ export default async function NotificationsPage() {
 
   return (
     <AppShell>
-      <main className="flex flex-col gap-4">
+      <main className="flex flex-col gap-3">
         <BackLink href="/home" label="На главную" />
 
         {/* Заголовок и «прочитать всё» на одной строке: раньше кнопка во всю
             ширину стояла отдельным блоком и весила больше самого списка. */}
-        <header className="flex items-end justify-between gap-3 pb-1 pt-3">
+        <header className="flex items-end justify-between gap-3 rounded-card bg-surface px-4 pb-4 pt-5">
           <div>
             <h1 className="text-h1 font-extrabold">Уведомления</h1>
             {unread > 0 ? (
@@ -76,7 +76,8 @@ export default async function NotificationsPage() {
             hint="Здесь появятся отклики на заявки, напоминания о матчах и изменения уровня."
           />
         ) : (
-          <ul className="flex flex-col gap-2">
+          <Panel className="!p-0">
+            <ul className="flex flex-col">
             {notifications.map((notification) => {
               const href = linkFor(notification.payload);
               const detail = detailFor(notification.type, notification.payload);
@@ -112,21 +113,19 @@ export default async function NotificationsPage() {
               );
 
               return (
-                <li key={notification.id}>
-                  {href ? (
-                    <Link
-                      href={href}
-                      className="pressable block rounded-card bg-surface p-4"
-                    >
-                      {content}
-                    </Link>
-                  ) : (
-                    <div className="rounded-card bg-surface p-4">{content}</div>
-                  )}
-                </li>
+                <li key={notification.id} className="border-b border-border last:border-0">
+                    {href ? (
+                      <Link href={href} className="pressable block p-4">
+                        {content}
+                      </Link>
+                    ) : (
+                      <div className="p-4">{content}</div>
+                    )}
+                  </li>
               );
             })}
-          </ul>
+            </ul>
+          </Panel>
         )}
       </main>
     </AppShell>

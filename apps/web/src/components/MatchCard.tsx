@@ -38,9 +38,9 @@ export function MatchCard({
   return (
     <Link
       href={`/matches/${match.id}`}
-      className={`pressable block rounded-card ${
-        action ? 'bg-ball-soft' : 'bg-surface'
-      } ${focus ? 'p-4' : 'p-4'}`}
+      className={`pressable block rounded-card p-4 ${
+        action ? 'bg-ball-soft' : 'bg-sunken hover:bg-border'
+      }`}
     >
       {action ? (
         <p className="mb-2 inline-flex items-center gap-1.5 rounded-chip bg-ball px-2 py-1 text-caption font-semibold uppercase tracking-wide text-ball-ink">

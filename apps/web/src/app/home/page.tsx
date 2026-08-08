@@ -8,7 +8,7 @@ import { CreateButton } from '@/components/CreateButton';
 import { LevelStrip } from '@/components/LevelStrip';
 import { MatchCard } from '@/components/MatchCard';
 import { TournamentCard } from '@/components/TournamentCard';
-import { Button, Card, EmptyState, MoreLink, SectionHeader } from '@/components/ui';
+import { Button, EmptyState, MoreLink, Panel } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 
 /**
@@ -53,23 +53,27 @@ export default async function HomePage({
 
   return (
     <AppShell fab={<CreateButton />}>
-      <main className="flex flex-col gap-7 pt-5">
+      {/* Разрыв между плашками — это и есть граница смысла. 12 px серого
+          между белыми блоками читаются лучше, чем заголовок на сером фоне. */}
+      <main className="flex flex-col gap-3 pt-5">
         <Greeting firstName={user.firstName} unread={unread} />
 
         {welcome ? (
-          <Card tone="accent">
+          <Panel tone="accent">
             <p className="text-body">
               Готово, ваш уровень — <span className="figure font-semibold">{formatLevel(level)}</span>.
               Это стартовая оценка по анкете: первые матчи будут двигать её заметно.
             </p>
-          </Card>
+          </Panel>
         ) : null}
 
-        <LevelStrip
-          level={level}
-          reliability={reliability}
-          ratedMatches={user.ratedMatchesCount}
-        />
+        <Panel>
+          <LevelStrip
+            level={level}
+            reliability={reliability}
+            ratedMatches={user.ratedMatchesCount}
+          />
+        </Panel>
 
         {/* Фокус экрана. Секции нет, пока нечему в ней быть — пустой блок
             «ничего не требуется» только разбавлял бы важное. */}
@@ -77,21 +81,20 @@ export default async function HomePage({
           /* Единственная секция с появлением. Она приходит не всегда, и её
              приход стоит заметить; одинаковый въезд на все секции — это уже
              не движение, а тик. */
-          <section className="rise-in flex flex-col gap-3">
-            <SectionHeader>Требует вас</SectionHeader>
-            {needsMe.map((match) => (
-              <MatchCard key={match.id} match={match} viewerId={user.id} variant="focus" />
-            ))}
-          </section>
+          <Panel title="Требует вас" className="rise-in">
+            <div className="flex flex-col gap-3">
+              {needsMe.map((match) => (
+                <MatchCard key={match.id} match={match} viewerId={user.id} variant="focus" />
+              ))}
+            </div>
+          </Panel>
         ) : null}
 
         {/* Секция пропускается, если все матчи уже показаны выше: иначе экран
             сам себе противоречит — «вы никуда не записаны» под карточкой
             собственного матча. */}
         {upcoming.length > 0 || needsMe.length === 0 ? (
-          <section className="flex flex-col gap-3">
-            <SectionHeader>Мои матчи</SectionHeader>
-
+          <Panel title="Мои матчи">
             {upcoming.length === 0 ? (
               <EmptyState
                 title="Вы никуда не записаны"
@@ -103,11 +106,13 @@ export default async function HomePage({
                 }
               />
             ) : (
-              upcoming.map((match) => (
-                <MatchCard key={match.id} match={match} viewerId={user.id} />
-              ))
+              <div className="flex flex-col gap-3">
+                {upcoming.map((match) => (
+                  <MatchCard key={match.id} match={match} viewerId={user.id} />
+                ))}
+              </div>
             )}
-          </section>
+          </Panel>
         ) : null}
 
         <Rail
@@ -149,7 +154,7 @@ export default async function HomePage({
  */
 function Greeting({ firstName, unread }: { firstName: string; unread: number }) {
   return (
-    <header className="flex items-center justify-between gap-3">
+    <header className="flex items-center justify-between gap-3 rounded-card bg-surface p-3">
       <Link href="/profile" className="pressable flex min-h-11 items-center gap-3">
         <span className="flex size-12 items-center justify-center rounded-full bg-sunken text-title font-bold text-text-secondary">
           {firstName[0]?.toUpperCase()}
@@ -163,7 +168,7 @@ function Greeting({ firstName, unread }: { firstName: string; unread: number }) 
       <Link
         href="/notifications"
         aria-label={unread > 0 ? `Уведомления, непрочитанных: ${unread}` : 'Уведомления'}
-        className="pressable relative flex size-11 items-center justify-center rounded-full bg-surface"
+        className="pressable relative flex size-11 items-center justify-center rounded-full bg-sunken"
       >
         <BellIcon />
         {unread > 0 ? (
@@ -196,25 +201,22 @@ function Rail({
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3">
-      <SectionHeader
-        action={
-          count > 0 ? (
-            <Link href={href} className="pressable shrink-0">
-              <MoreLink>Все</MoreLink>
-            </Link>
-          ) : null
-        }
-      >
-        {title}
-      </SectionHeader>
-
+    <Panel
+      title={title}
+      action={
+        count > 0 ? (
+          <Link href={href} className="pressable shrink-0">
+            <MoreLink>Все</MoreLink>
+          </Link>
+        ) : null
+      }
+    >
       {count === 0 ? (
         <EmptyState title={empty} hint={emptyHint} variant="quiet" />
       ) : (
         <div className="rail">{children}</div>
       )}
-    </section>
+    </Panel>
   );
 }
 

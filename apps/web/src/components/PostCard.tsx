@@ -61,7 +61,7 @@ export function PostCard({ post, href }: { post: FeedPost; href?: string }) {
   );
 
   return (
-    <article className="rounded-card bg-surface p-4">
+    <article className="rounded-card bg-sunken p-4">
       {href ? (
         <Link href={href} className="block">
           {body}

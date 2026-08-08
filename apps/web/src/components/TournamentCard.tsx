@@ -15,7 +15,7 @@ export function TournamentCard({ tournament }: { tournament: TournamentCardData 
   return (
     <Link
       href={`/tournaments/${tournament.id}`}
-      className="pressable block rounded-card bg-surface p-4"
+      className="pressable block rounded-card bg-sunken p-4 hover:bg-border"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -39,7 +39,7 @@ export function TournamentCard({ tournament }: { tournament: TournamentCardData 
 
       {/* Заполненность полосой, а не только цифрами: по ней сразу видно,
           успеваешь ли ты записаться. */}
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-sunken">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface">
         <div
           className="h-full rounded-full bg-accent transition-[width]"
           style={{ width: `${Math.round(filled * 100)}%` }}

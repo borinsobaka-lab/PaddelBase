@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 import { AppShell } from '@/components/AppShell';
 import { RatingBlock } from '@/components/RatingBlock';
-import { Button, Card, EmptyState, SectionHeader } from '@/components/ui';
+import { Button, EmptyState, Panel } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 import { formatDay } from '@/lib/format';
 
@@ -31,16 +31,18 @@ export default async function ProfilePage() {
 
   return (
     <AppShell>
-      <main className="flex flex-col gap-6 pt-5">
-        <header className="flex items-center gap-4">
-          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-sunken text-h2 font-bold text-text-secondary">
-            {name[0]?.toUpperCase()}
-          </span>
-          <div className="min-w-0">
-            <h1 className="truncate text-h2 font-extrabold leading-tight">{name}</h1>
-            <p className="text-small text-muted">{user.city ?? 'Грузия'}</p>
-          </div>
-        </header>
+      <main className="flex flex-col gap-3 pt-5">
+        <Panel>
+          <header className="flex items-center gap-4">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-sunken text-h2 font-bold text-text-secondary">
+              {name[0]?.toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <h1 className="truncate text-h2 font-extrabold leading-tight">{name}</h1>
+              <p className="text-small text-muted">{user.city ?? 'Грузия'}</p>
+            </div>
+          </header>
+        </Panel>
 
         <RatingBlock level={level} reliability={reliability} ratedMatches={user.ratedMatchesCount} />
 
@@ -52,9 +54,8 @@ export default async function ProfilePage() {
             узнаваемая заготовка. Здесь их две: сыграно и выиграно, то, что
             игрок действительно проверяет. Остальное — справка, и её место в
             строках, а не на пьедестале. */}
-        <section className="flex flex-col gap-3">
-          <SectionHeader>Статистика</SectionHeader>
-          <Card className="flex flex-col gap-4">
+        <Panel title="Статистика">
+          <div className="flex flex-col gap-4">
             <dl className="grid grid-cols-2 gap-4">
               <Stat label="Рейтинговых матчей" value={String(user.ratedMatchesCount)} />
               {/* «1 из 1» ставило бы русское «из» в моноширинный шрифт. Косая
@@ -68,19 +69,17 @@ export default async function ProfilePage() {
               <Fact label="Стартовый уровень" value={formatLevel(toNumber(user.startLevel))} />
               <Fact label="В приложении с" value={user.createdAt.toLocaleDateString('ru-RU')} />
             </dl>
-          </Card>
-        </section>
+          </div>
+        </Panel>
 
-        <section className="flex flex-col gap-3">
-          <SectionHeader>История матчей</SectionHeader>
-
+        <Panel title="История матчей">
           {history.length === 0 ? (
             <EmptyState
               title="Сыгранных матчей пока нет"
               hint="После первого здесь появится счёт и изменение уровня."
             />
           ) : (
-            <Card className="!p-0">
+            <div className="-mx-4 -mb-4">
               <ul className="flex flex-col">
                 {history.map((entry) => (
                   <li key={entry.matchId} className="border-b border-border last:border-0">
@@ -121,9 +120,9 @@ export default async function ProfilePage() {
                   </li>
                 ))}
               </ul>
-            </Card>
+            </div>
           )}
-        </section>
+        </Panel>
 
         <form action={signOut} className="pt-1">
           <Button variant="quiet" type="submit">
@@ -163,7 +162,7 @@ function Fact({ label, value }: { label: string; value: string }) {
  */
 function StartLevelExplanation({ breakdown }: { breakdown: StartLevelResult }) {
   return (
-    <Card className="!p-0">
+    <Panel className="!p-0">
       {/* Нативный треугольник маркера мелкий и не даёт цели нажатия; здесь
           вся строка высотой 44 px, а стрелка поворачивается при раскрытии. */}
       <details className="group">
@@ -222,7 +221,7 @@ function StartLevelExplanation({ breakdown }: { breakdown: StartLevelResult }) {
           </p>
         </div>
       </details>
-    </Card>
+    </Panel>
   );
 }
 

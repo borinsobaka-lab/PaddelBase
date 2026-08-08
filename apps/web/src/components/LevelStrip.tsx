@@ -28,7 +28,7 @@ export function LevelStrip({
   return (
     <Link
       href="/profile"
-      className="pressable flex items-center gap-4 rounded-card bg-surface p-4"
+      className="pressable flex items-center gap-4 rounded-card bg-sunken p-4 hover:bg-border"
     >
       <LevelDial level={level} reliability={reliability} />
 
@@ -44,10 +44,14 @@ export function LevelStrip({
             ? 'Пока не подтверждён'
             : calibrated
               ? 'Подтверждён'
-              : `Калибровка · ещё ${remaining} ${plural(remaining, 'матч', 'матча', 'матчей')}`}
+              : 'Идёт калибровка'}
         </p>
         <p className="mt-0.5 text-small text-muted">
-          {unrated ? 'Уточнится после первых матчей' : ratedMatchesLabel(ratedMatches)}
+          {unrated
+            ? 'Уточнится после первых матчей'
+            : calibrated
+              ? ratedMatchesLabel(ratedMatches)
+              : `ещё ${remaining} ${plural(remaining, 'матч', 'матча', 'матчей')}`}
         </p>
       </div>
 

@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { AppShell } from '@/components/AppShell';
 import { PostCard } from '@/components/PostCard';
-import { Button, EmptyState, PageTitle } from '@/components/ui';
+import { Button, EmptyState, PageTitle, Panel } from '@/components/ui';
 import { requireOnboardedUser } from '@/lib/currentUser';
 
 export default async function CommunityPage({
@@ -23,7 +23,7 @@ export default async function CommunityPage({
 
   return (
     <AppShell fab={<WriteButton />}>
-      <main>
+      <main className="flex flex-col gap-3 pt-5">
         <PageTitle subtitle="Кто что ищет, кто где играл">Комьюнити</PageTitle>
 
         {feed.posts.length === 0 ? (
@@ -37,11 +37,13 @@ export default async function CommunityPage({
             }
           />
         ) : (
-          <div className="flex flex-col gap-3">
-            {feed.posts.map((post) => (
-              <PostCard key={post.id} post={post} href={`/community/${post.id}`} />
-            ))}
-          </div>
+          <Panel>
+            <div className="flex flex-col gap-3">
+              {feed.posts.map((post) => (
+                <PostCard key={post.id} post={post} href={`/community/${post.id}`} />
+              ))}
+            </div>
+          </Panel>
         )}
 
         {feed.nextCursor ? (
