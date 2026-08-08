@@ -21,7 +21,7 @@ export function RatingBlock({
   const unrated = ratedMatches === 0;
 
   return (
-    <section className="flex flex-col items-center gap-5 rounded-card bg-surface p-6">
+    <section className="bleed flex flex-col items-center gap-5 rounded-card bg-surface p-6">
       <LevelDial level={level} reliability={reliability} size="lg" />
 
       <div className="text-center">

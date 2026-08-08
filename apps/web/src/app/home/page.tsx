@@ -154,7 +154,7 @@ export default async function HomePage({
  */
 function Greeting({ firstName, unread }: { firstName: string; unread: number }) {
   return (
-    <header className="flex items-center justify-between gap-3 rounded-card bg-surface p-3">
+    <header className="bleed flex items-center justify-between gap-3 rounded-card bg-surface p-3">
       <Link href="/profile" className="pressable flex min-h-11 items-center gap-3">
         <span className="flex size-12 items-center justify-center rounded-full bg-sunken text-title font-bold text-text-secondary">
           {firstName[0]?.toUpperCase()}

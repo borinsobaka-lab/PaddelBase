@@ -273,7 +273,7 @@ export function InfoNote({ children }: { children: ReactNode }) {
  */
 export function PageTitle({ children, subtitle }: { children: ReactNode; subtitle?: string }) {
   return (
-    <header className="rounded-card bg-surface px-4 pb-4 pt-5">
+    <header className="bleed rounded-card bg-surface px-4 pb-4 pt-5">
       <h1 className="text-h1 font-extrabold">{children}</h1>
       {subtitle ? (
         <p className="mt-1 max-w-[42ch] text-small text-text-secondary">{subtitle}</p>
@@ -363,7 +363,7 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={`rounded-card p-4 ${TONES[tone]} ${className}`}>
+    <section className={`bleed rounded-card p-4 ${TONES[tone]} ${className}`}>
       {title ? (
         <header className="mb-3 flex min-h-8 items-center justify-between gap-3">
           <h2 className="text-h2 font-bold">{title}</h2>

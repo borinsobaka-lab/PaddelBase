@@ -50,7 +50,7 @@ export default async function NotificationsPage() {
 
         {/* Заголовок и «прочитать всё» на одной строке: раньше кнопка во всю
             ширину стояла отдельным блоком и весила больше самого списка. */}
-        <header className="flex items-end justify-between gap-3 rounded-card bg-surface px-4 pb-4 pt-5">
+        <header className="bleed flex items-end justify-between gap-3 rounded-card bg-surface px-4 pb-4 pt-5">
           <div>
             <h1 className="text-h1 font-extrabold">Уведомления</h1>
             {unread > 0 ? (
