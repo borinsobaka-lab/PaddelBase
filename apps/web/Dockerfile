@@ -28,7 +28,10 @@ RUN pnpm --filter @paddelbase/web build
 # Версия CLI обязана совпадать с версией клиента: расхождение мажора или минора
 # ломает `migrate deploy`. Берём её из установленного пакета, а не из
 # package.json — там диапазон с кареткой, и образ мог бы получить другую сборку.
-RUN node -p "require('prisma/package.json').version" > /prisma-version
+#
+# Обязательно из packages/db: у pnpm `prisma` лежит devDependency этого пакета
+# и в node_modules корня монорепо не поднимается.
+RUN cd packages/db && node -p "require('prisma/package.json').version" > /prisma-version
 
 FROM base AS runtime
 ENV NODE_ENV=production
@@ -40,8 +43,8 @@ COPY --from=build --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.n
 # public/ standalone-вывод в себя не включает, а там лежат файлы шрифтов.
 # Без этой строки приложение молча откатывается на системный шрифт.
 COPY --from=build --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
-# Схема и миграции нужны в рантайме: prisma migrate deploy запускается
-# при выкатке, а не при сборке образа — миграции применяются к живой базе.
+# Схема и миграции нужны в рантайме: они применяются к живой базе при старте
+# контейнера, а не при сборке образа.
 COPY --from=build --chown=nextjs:nodejs /app/packages/db/prisma ./packages/db/prisma
 
 # Сам CLI в standalone-вывод не попадает: трассировщик Next.js включает только
@@ -50,6 +53,11 @@ COPY --from=build --chown=nextjs:nodejs /app/packages/db/prisma ./packages/db/pr
 COPY --from=build /prisma-version /tmp/prisma-version
 RUN npm install -g "prisma@$(cat /tmp/prisma-version)" && rm /tmp/prisma-version
 
+# Миграции применяются при старте, а не отдельной командой выкатки: см. причину
+# в самом файле.
+COPY --from=build --chown=nextjs:nodejs /app/apps/web/docker-entrypoint.sh ./
+RUN chmod +x ./docker-entrypoint.sh
+
 USER nextjs
 EXPOSE 3000
-CMD ["node", "apps/web/server.js"]
+CMD ["./docker-entrypoint.sh"]
