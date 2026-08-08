@@ -36,6 +36,11 @@ RUN cd packages/db && node -p "require('prisma/package.json').version" > /prisma
 FROM base AS runtime
 ENV NODE_ENV=production
 ENV PORT=3000
+# Standalone-сервер Next.js берёт адрес привязки из HOSTNAME, а Docker кладёт
+# туда идентификатор контейнера. Без этой строки сервер слушает только на
+# адресе eth0, и health check по localhost получает «Connection refused» при
+# полностью исправном приложении.
+ENV HOSTNAME=0.0.0.0
 RUN addgroup -g 1001 nodejs && adduser -u 1001 -G nodejs -S nextjs
 
 COPY --from=build --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
